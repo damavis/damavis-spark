@@ -1,4 +1,4 @@
-package com.damavis.spark.resource
+package com.damavis.spark.resource.parquet
 
 import java.time.LocalDate
 

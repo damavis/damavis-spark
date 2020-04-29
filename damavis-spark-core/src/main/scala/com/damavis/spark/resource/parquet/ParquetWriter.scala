@@ -1,4 +1,6 @@
-package com.damavis.spark.resource
+package com.damavis.spark.resource.parquet
+
+import com.damavis.spark.resource.ResourceWriter
 import org.apache.spark.sql.DataFrame
 
 object ParquetWriter {
@@ -7,9 +9,8 @@ object ParquetWriter {
 }
 
 class ParquetWriter(path: String, _mode: String) extends ResourceWriter {
-  override def write(data: DataFrame): Unit = {
+  override def write(data: DataFrame): Unit =
     data.write.mode(_mode).parquet(path)
-  }
 
   def mode(mode: String): ParquetWriter =
     new ParquetWriter(path, mode)

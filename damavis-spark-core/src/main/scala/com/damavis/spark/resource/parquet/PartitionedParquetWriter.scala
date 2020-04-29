@@ -1,4 +1,6 @@
-package com.damavis.spark.resource
+package com.damavis.spark.resource.parquet
+
+import com.damavis.spark.resource.ResourceWriter
 import org.apache.spark.sql.DataFrame
 
 class PartitionedParquetWriter(path: String,
