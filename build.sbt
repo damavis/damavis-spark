@@ -1,7 +1,5 @@
 val sparkVersion = "2.4.5"
 
-version := "0.1.0"
-
 val dependencies = Seq(
   "org.apache.spark" %% "spark-core" % sparkVersion,
   "org.apache.spark" %% "spark-sql" % sparkVersion,
@@ -15,7 +13,7 @@ val testDependencies = Seq(
 
 val settings = Seq(
   organization := "com.damavis",
-  version := "0.0.1",
+  version := "0.1.0",
   isSnapshot := version.value.endsWith("SNAPSHOT"),
   scalaVersion := "2.12.11",
   libraryDependencies ++= dependencies ++ testDependencies,
