@@ -8,7 +8,8 @@ import org.apache.spark.sql.{SaveMode, SparkSession}
 
 object TableWriterBuilder {
   def apply(format: Format, path: String, table: String)(
-      implicit spark: SparkSession): TableWriterBuilder = {
+      implicit spark: SparkSession,
+      schema: Schema): TableWriterBuilder = {
     val params = TableWriterParameters(format, path, table)
 
     new TableWriterBuilder(params)
@@ -16,10 +17,11 @@ object TableWriterBuilder {
 }
 
 class TableWriterBuilder(params: TableWriterParameters)(
-    implicit spark: SparkSession)
+    implicit spark: SparkSession,
+    schema: Schema)
     extends WriterBuilder {
   override def writer(): ResourceWriter =
-    new TableResourceWriter(spark, new Schema(spark), params)
+    new TableResourceWriter(spark, schema, params)
 
   def partitionedBy(columns: Seq[String]): TableWriterBuilder = {
     val newParams = params.copy(partitionedBy = Some(columns))

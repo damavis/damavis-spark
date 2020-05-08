@@ -4,8 +4,9 @@ import com.damavis.spark.database.Schema
 import com.damavis.spark.resource.{ReaderBuilder, ResourceReader}
 import org.apache.spark.sql.SparkSession
 
-class TableReaderBuilder(table: String)(implicit spark: SparkSession)
+class TableReaderBuilder(table: String)(implicit spark: SparkSession,
+                                        schema: Schema)
     extends ReaderBuilder {
   override def reader(): ResourceReader =
-    new TableResourceReader(spark, new Schema(spark.catalog), table)
+    new TableResourceReader(spark, schema, table)
 }
