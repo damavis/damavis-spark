@@ -1,12 +1,13 @@
 package com.damavis.spark.resource.datasource
 
+import com.damavis.spark.resource.datasource.Format._
 import com.damavis.spark.resource.{BasicResourceRW, RWBuilder, ResourceRW}
 import org.apache.spark.sql.SparkSession
 
 object TableRWBuilder {
-  def apply(table: String, format: String, path: String)(
+  def apply(format: Format, path: String, table: String)(
       implicit spark: SparkSession): TableRWBuilder = {
-    val writerParameters = TableWriterParameters(table, format, path)
+    val writerParameters = TableWriterParameters(format, path, table)
 
     new TableRWBuilder(table, writerParameters)
   }

@@ -2,7 +2,6 @@ package com.damavis.spark.resource.datasource
 
 import com.damavis.spark.database.Schema
 import com.damavis.spark.resource.ResourceWriter
-import com.damavis.spark.resource.datasource.TableWriterParameters.OverwritePartitionBehavior
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 
 class TableResourceWriter(spark: SparkSession,
@@ -35,7 +34,7 @@ class TableResourceWriter(spark: SparkSession,
 
     try {
       partitionWriter
-        .format(params.format)
+        .format(s"${params.format}")
         .option("path", params.path)
         .mode(params.saveMode)
         .saveAsTable(params.table)
