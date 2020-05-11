@@ -1,18 +1,16 @@
 package com.damavis.spark.resource.datasource
 
-import com.damavis.spark.database.Schema
+import com.damavis.spark.database.Table
 import com.damavis.spark.resource.ResourceWriter
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 
 class TableResourceWriter(spark: SparkSession,
-                          schema: Schema,
+                          table: Table,
                           params: TableWriterParameters)
     extends ResourceWriter {
   override def write(data: DataFrame): Unit = {
-    val table = params.table
-
-    if (!schema.tableExists(table.name))
-      throw new RuntimeException(s"Table ${params.table} not found in schema")
+    if (!table.schema.tableExists(table.name))
+      throw new RuntimeException(s"Table ${table.name} not found in schema")
 
     val previousOverwriteConf =
       spark.conf.get("spark.sql.sources.partitionOverwriteMode")
@@ -35,8 +33,8 @@ class TableResourceWriter(spark: SparkSession,
 
     try {
       partitionWriter
-        .format(s"${table.format}")
-        .option("path", table.path)
+        .format(s"${table.options.format}")
+        .option("path", table.options.path)
         .mode(params.saveMode)
         .saveAsTable(table.name)
     } catch {
