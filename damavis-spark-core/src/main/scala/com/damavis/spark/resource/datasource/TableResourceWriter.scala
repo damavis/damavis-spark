@@ -9,18 +9,19 @@ class TableResourceWriter(spark: SparkSession,
                           params: TableWriterParameters)
     extends ResourceWriter {
   override def write(data: DataFrame): Unit = {
-    if (!schema.tableExists(params.table))
+    val table = params.table
+
+    if (!schema.tableExists(table.name))
       throw new RuntimeException(s"Table ${params.table} not found in schema")
 
     val previousOverwriteConf =
       spark.conf.get("spark.sql.sources.partitionOverwriteMode")
 
     if (params.saveMode == SaveMode.Overwrite && params.partitionedBy.isDefined) {
-      val overwriteMode =
-        if (params.overwriteBehavior == OverwritePartitionBehavior.OVERWRITE_ALL)
-          "static"
-        else
-          "dynamic"
+      val overwriteMode = params.overwriteBehavior match {
+        case OverwritePartitionBehavior.OVERWRITE_ALL      => "static"
+        case OverwritePartitionBehavior.OVERWRITE_MATCHING => "dynamic"
+      }
 
       spark.conf.set("spark.sql.sources.partitionOverwriteMode", overwriteMode)
     }
@@ -34,10 +35,10 @@ class TableResourceWriter(spark: SparkSession,
 
     try {
       partitionWriter
-        .format(s"${params.format}")
-        .option("path", params.path)
+        .format(s"${table.format}")
+        .option("path", table.path)
         .mode(params.saveMode)
-        .saveAsTable(params.table)
+        .saveAsTable(table.name)
     } catch {
       case e: Throwable => throw e
     } finally {

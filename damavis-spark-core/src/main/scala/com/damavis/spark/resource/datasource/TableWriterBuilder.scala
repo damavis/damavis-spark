@@ -7,10 +7,11 @@ import com.damavis.spark.resource.{ResourceWriter, WriterBuilder}
 import org.apache.spark.sql.{SaveMode, SparkSession}
 
 object TableWriterBuilder {
-  def apply(format: Format, path: String, table: String)(
+  def apply(name: String, path: String, format: Format)(
       implicit spark: SparkSession,
       schema: Schema): TableWriterBuilder = {
-    val params = TableWriterParameters(format, path, table)
+    val table = TableOptions(name, path, format)
+    val params = TableWriterParameters(table)
 
     new TableWriterBuilder(params)
   }

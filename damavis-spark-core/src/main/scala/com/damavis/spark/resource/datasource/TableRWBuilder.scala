@@ -6,12 +6,13 @@ import com.damavis.spark.resource.{BasicResourceRW, RWBuilder, ResourceRW}
 import org.apache.spark.sql.SparkSession
 
 object TableRWBuilder {
-  def apply(format: Format, path: String, table: String)(
+  def apply(name: String, path: String, format: Format)(
       implicit spark: SparkSession,
       schema: Schema): TableRWBuilder = {
-    val writerParameters = TableWriterParameters(format, path, table)
+    val table = TableOptions(name, path, format)
+    val writerParameters = TableWriterParameters(table)
 
-    new TableRWBuilder(table, writerParameters)
+    new TableRWBuilder(name, writerParameters)
   }
 
   def apply(table: String, writerParameters: TableWriterParameters)(
