@@ -1,40 +1,17 @@
 package com.damavis.spark.database
 
-import com.damavis.spark.resource.datasource.Format
+import com.damavis.spark.resource.datasource.enums.Format
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.functions._
-import org.apache.spark.sql.catalog.{Catalog, Database}
+import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.catalog.{Catalog, Database => SparkDatabase}
 import org.slf4j.LoggerFactory
 
 import scala.util.Try
 
-object Schema {
-  def useDatabase(name: String, forceCreation: Boolean = false)(
-      implicit spark: SparkSession): Schema = {
-    lazy val logger = LoggerFactory.getLogger(classOf[Schema])
+class Database(db: SparkDatabase, catalog: Catalog)(
+    implicit spark: SparkSession) {
 
-    val catalog = spark.catalog
-
-    if (!catalog.databaseExists(name))
-      if (forceCreation) {
-        logger.warn(s"""Database "$name" not found in catalog. Creating it""")
-        spark.sql(s"CREATE DATABASE IF NOT EXISTS $name")
-        logger.info(s"""Database "$name" created""")
-      } else {
-        throw new RuntimeException(s"Database $name was not found in catalog")
-      }
-
-    catalog.setCurrentDatabase(name)
-
-    val db = catalog.getDatabase(name)
-
-    new Schema(db, catalog)
-  }
-}
-
-class Schema(db: Database, catalog: Catalog)(implicit spark: SparkSession) {
-
-  private lazy val logger = LoggerFactory.getLogger(classOf[Schema])
+  private lazy val logger = LoggerFactory.getLogger(this.getClass)
 
   def tableExists(table: String): Boolean = {
     val dbPath = parseAndCheckTableName(table)
