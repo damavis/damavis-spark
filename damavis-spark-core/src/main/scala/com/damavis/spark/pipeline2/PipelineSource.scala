@@ -1,12 +1,12 @@
 package com.damavis.spark.pipeline2
 
-import org.apache.spark.sql.DataFrame
+class PipelineSource(processor: Processor) extends PipelineStage(processor) {
 
-abstract class PipelineSource {
+  override def ->(stage: StageSocket)(
+      implicit definition: PipelineDefinition): PipelineStage = {
+    definition.addSource(this)
 
-  def ->(next: PipelineStage): PipelineDefinition = {
-    PipelineDefinition(this, next :: Nil)
+    super.->(stage)
   }
 
-  def get(): DataFrame
 }

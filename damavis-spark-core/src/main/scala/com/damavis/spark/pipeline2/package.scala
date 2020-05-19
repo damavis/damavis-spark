@@ -5,7 +5,7 @@ import org.apache.spark.sql.DataFrame
 
 import scala.language.implicitConversions
 
-package object pipeline3 {
+package object pipeline2 {
 
   object implicits {
     implicit def defaultSocketOfStage(stage: PipelineStage): StageSocket =

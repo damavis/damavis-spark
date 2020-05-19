@@ -1,8 +1,10 @@
 package com.damavis.spark.pipeline2
-import org.apache.spark.sql.DataFrame
 
-trait PipelineTarget {
+class PipelineTarget(processor: Processor) extends PipelineStage(processor) {
 
-  def put(data: DataFrame): Unit
+  override def compute(): Unit = processor.compute(sockets)
+
+  override def ->(stage: StageSocket)(
+      implicit definition: PipelineDefinition): PipelineStage = ???
 
 }
