@@ -40,10 +40,10 @@ class PipelineStage(private val processor: Processor) {
 
   def ->(socket: StageSocket)(
       implicit definition: PipelineDefinition): PipelineStage = {
+    //TODO: disallow assignment to stages already connected
+
     if (this == socket.stage)
       throw new RuntimeException("Loops not allowed in the pipeline")
-
-    // TODO: Check for loops in the graph
 
     deliverySocket = socket
 

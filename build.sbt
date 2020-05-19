@@ -8,16 +8,18 @@ val dependencies = Seq(
 
 val testDependencies = Seq(
   "org.scalatest" %% "scalatest" % "3.0.5" % Test,
-  "org.scalamock" %% "scalamock" % "4.1.0" % Test
+  "org.scalamock" %% "scalamock" % "4.1.0" % Test,
+  "com.holdenkarau" %% "spark-testing-base" % s"${sparkVersion}_0.14.0" % Test
 )
 
 val settings = Seq(
   organization := "com.damavis",
-  version := "0.1.0",
+  version := "0.1.0-SNAPSHOT",
   isSnapshot := version.value.endsWith("SNAPSHOT"),
   scalaVersion := "2.12.11",
   libraryDependencies ++= dependencies ++ testDependencies,
   fork in Test := true,
+  parallelExecution in Test := false,
   envVars in Test := Map(
     "MASTER" -> "local[*]"
   )
