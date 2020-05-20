@@ -1,18 +1,15 @@
 package com.damavis.spark.database
 
-import com.damavis.spark.SparkApp
 import com.damavis.spark.database.exceptions.{
   DatabaseNotFoundException,
   InvalidDatabaseNameException
 }
-import org.scalatest.WordSpec
+import com.damavis.spark.utils.SparkTest
 import org.apache.spark.sql.functions._
 
 import scala.util.Try
 
-class DbManagerTest extends WordSpec with SparkApp {
-  override val name: String = "DbManagerTest"
-
+class DbManagerTest extends SparkTest {
   "A DbManager" when {
     "accessed" should {
       "throw exception if asked for a database with invalid name" in {
