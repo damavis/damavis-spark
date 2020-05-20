@@ -1,7 +1,7 @@
 package com.damavis.spark.resource.datasource
 
 import com.damavis.spark.database.{Database, Table}
-import com.damavis.spark.resource.datasource.OverwritePartitionBehavior._
+import com.damavis.spark.resource.datasource.enums.OverwritePartitionBehavior._
 import com.damavis.spark.resource.{ResourceWriter, WriterBuilder}
 import org.apache.spark.sql.{SaveMode, SparkSession}
 
