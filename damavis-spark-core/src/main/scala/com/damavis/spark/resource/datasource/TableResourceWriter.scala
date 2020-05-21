@@ -10,9 +10,6 @@ class TableResourceWriter(spark: SparkSession,
                           params: TableWriterParameters)
     extends ResourceWriter {
   override def write(data: DataFrame): Unit = {
-    if (!table.schema.tableExists(table.name))
-      throw new RuntimeException(s"Table ${table.name} not found in schema")
-
     val previousOverwriteConf =
       spark.conf.get("spark.sql.sources.partitionOverwriteMode")
 

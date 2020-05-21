@@ -16,9 +16,10 @@ class Database(db: SparkDatabase, protected[database] val catalog: Catalog)(
   private lazy val logger = LoggerFactory.getLogger(this.getClass)
 
   def tableExists(table: String): Boolean = {
-    val dbPath = parseAndCheckTableName(table)
+    val dbPath = parseTableName(table)
 
-    catalog.tableExists(dbPath._2)
+    if (dbPath._1 != db.name) false
+    else catalog.tableExists(dbPath._2)
   }
 
   def prepareTable(name: String,
@@ -55,19 +56,21 @@ class Database(db: SparkDatabase, protected[database] val catalog: Catalog)(
       val managed = fields(2).getString(0) == "MANAGED"
       val options = TableOptions(location, format, managed)
 
-      Table(this, actualName, options)
+      Table(db.name, actualName, options)
     }
   }
 
+  private def parseTableName(name: String): (String, String) =
+    if (name.contains(".")) {
+      val separatorInd = name.indexOf('.')
+      val t = name.splitAt(separatorInd)
+      t.copy(_2 = t._2.tail) //Remove "." from name
+    } else {
+      (db.name, name)
+    }
+
   private def parseAndCheckTableName(name: String): (String, String) = {
-    val dbParts =
-      if (name.contains(".")) {
-        val separatorInd = name.indexOf('.')
-        val t = name.splitAt(separatorInd)
-        t.copy(_2 = t._2.tail) //Remove "." from name
-      } else {
-        (db.name, name)
-      }
+    val dbParts = parseTableName(name)
 
     if (dbParts._1 != db.name) {
       val errMsg =

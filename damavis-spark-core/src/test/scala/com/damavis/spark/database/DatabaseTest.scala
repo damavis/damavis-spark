@@ -48,14 +48,43 @@ class DatabaseTest extends SparkTestSupport {
       assert(tryTable.isSuccess)
     }
 
-    "report whether a table exists or not" in {}
+    "report whether a table exists or not" in {
+      assert(db.tableExists("persons"))
+      assert(!db.tableExists("persons2"))
 
-    "recover specified table along with its metadata" in {}
+      assert(db.tableExists("test.persons"))
+      assert(!db.tableExists("another_test.persons"))
+    }
 
-    "recover table successfully ignoring database from table name" in {}
+    "recover specified table along with its metadata" in {
+      val table = db.getTable("persons").get
 
-    "fail to recover a table that does not exists" in {}
+      // "path" field contains the whole path within the warehouse
+      // This value is non-deterministic: it changes each time the test is executed
+      // We will check that the table path in the database is as expected, since this is always the same
+      assert(table.options.path.endsWith("/test.db/persons"))
 
-    "fail to recover a table that belongs to another database" in {}
+      val cleared =
+        table.copy(options = table.options.copy(path = "/test.db/persons"))
+      val expected =
+        Table("test",
+              "persons",
+              TableOptions("/test.db/persons", Format.Parquet, managed = true))
+
+      assert(cleared == expected)
+    }
+
+    "recover table successfully if database is in table name" in {
+      assert(db.getTable("test.persons").isSuccess)
+    }
+
+    "fail to recover a table that belongs to another database" in {
+      assert(db.getTable("another_test.persons").isFailure)
+    }
+
+    "fail to recover a table that does not exists" in {
+      assert(db.getTable("persons2").isFailure)
+    }
+
   }
 }
