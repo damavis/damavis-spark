@@ -3,7 +3,6 @@ package com.damavis.spark.database
 import com.damavis.spark.entities.Person
 import com.damavis.spark.resource.datasource.enums._
 import com.damavis.spark.utils.SparkTestSupport
-import com.holdenkarau.spark.testing.HDFSCluster
 
 import scala.util.Try
 
@@ -12,26 +11,11 @@ class DatabaseTest extends SparkTestSupport {
   import spark.implicits._
 
   var db: Database = _
-  var hdfsCluster: HDFSCluster = _
-
-  override def conf: Map[String, String] = {
-    super.conf + ("spark.hadoop.fs.default.name" -> hdfsCluster
-      .getNameNodeURI())
-  }
 
   override def beforeAll(): Unit = {
     super.beforeAll()
 
-    hdfsCluster = new HDFSCluster
-    hdfsCluster.startHDFS()
-
     db = DbManager.useDatabase("test", forceCreation = true)
-  }
-
-  override def afterAll(): Unit = {
-    hdfsCluster.shutdownHDFS()
-
-    super.afterAll()
   }
 
   "A database" should {
