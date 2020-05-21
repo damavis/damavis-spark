@@ -4,11 +4,13 @@ import com.damavis.spark.resource.datasource.enums.Format
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.catalog.{Catalog, Database => SparkDatabase}
+import org.apache.spark.sql.types.StructType
 import org.slf4j.LoggerFactory
 
+import scala.language.postfixOps
 import scala.util.Try
 
-class Database(db: SparkDatabase, catalog: Catalog)(
+class Database(db: SparkDatabase, protected[database] val catalog: Catalog)(
     implicit spark: SparkSession) {
 
   private lazy val logger = LoggerFactory.getLogger(this.getClass)
@@ -20,13 +22,14 @@ class Database(db: SparkDatabase, catalog: Catalog)(
   }
 
   def prepareTable(name: String,
-                   options: TableOptions,
+                   format: Format.Format,
+                   schema: StructType,
                    repair: Boolean = false): Unit = {
     val dbPath = parseAndCheckTableName(name)
     val actualName = dbPath._2
 
     if (!tableExists(actualName)) {
-      createTable(actualName, options)
+      createTable(actualName, format, schema)
     }
 
     if (repair) repairTable(actualName)
@@ -63,7 +66,7 @@ class Database(db: SparkDatabase, catalog: Catalog)(
         val t = name.splitAt(separatorInd)
         t.copy(_2 = t._2.tail) //Remove "." from name
       } else {
-        ("default", name)
+        (db.name, name)
       }
 
     if (dbParts._1 != db.name) {
@@ -78,10 +81,10 @@ class Database(db: SparkDatabase, catalog: Catalog)(
     dbParts
   }
 
-  private def createTable(name: String, options: TableOptions): Unit = {
-    val optionsMap = Map("format" -> s"${options.format}")
-
-    catalog.createTable(name, options.path, optionsMap)
+  private def createTable(name: String,
+                          format: Format.Format,
+                          schema: StructType): Unit = {
+    catalog.createTable(name, format.toString, schema, Map[String, String]())
   }
 
   private def repairTable(name: String): Unit = {

@@ -5,7 +5,7 @@ import org.apache.hadoop.fs.Path
 import org.apache.spark.sql.SparkSession
 
 object HadoopFS {
-  def apply(implicit spark: SparkSession): HadoopFS = new HadoopFS()
+  def apply()(implicit spark: SparkSession): HadoopFS = new HadoopFS()
 }
 
 class HadoopFS()(implicit spark: SparkSession) extends FileSystem {

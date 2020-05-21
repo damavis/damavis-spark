@@ -2,21 +2,20 @@ package com.damavis.spark.utils
 
 import java.io.File
 import java.nio.file.Files
+import java.util.concurrent.atomic.AtomicReference
 
 import scala.reflect.io.Directory
 import com.damavis.spark.SparkApp
 import org.scalatest.{BeforeAndAfterAll, WordSpec}
 
-import scala.collection.mutable
-
-class SparkTest extends WordSpec with SparkApp with BeforeAndAfterAll {
+class SparkTestSupport extends WordSpec with SparkApp with BeforeAndAfterAll {
   override val name: String = this.getClass.getName
 
   override def conf: Map[String, String] = {
-    warehouseConf.foldLeft(Map[String, String]())((imm, kv) => imm + kv)
+    super.conf + ("spark.sql.warehouse.dir" -> warehouseConf.get())
   }
 
-  private val warehouseConf = mutable.Map.empty[String, String]
+  private val warehouseConf = new AtomicReference[String]
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -25,11 +24,11 @@ class SparkTest extends WordSpec with SparkApp with BeforeAndAfterAll {
     val warehousePath =
       Files.createTempDirectory(s"sparktest-$className-warehouse-")
 
-    warehouseConf += ("spark.sql.warehouse.dir" -> warehousePath.toString)
+    warehouseConf.set(warehousePath.toString)
   }
 
   override def afterAll(): Unit = {
-    val path = warehouseConf("spark.sql.warehouse.dir")
+    val path = warehouseConf.get()
     val directory = new Directory(new File(path))
 
     directory.deleteRecursively()
