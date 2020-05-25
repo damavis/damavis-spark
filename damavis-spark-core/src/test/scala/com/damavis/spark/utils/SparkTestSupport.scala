@@ -12,9 +12,16 @@ class SparkTestSupport extends WordSpec with SparkApp with BeforeAndAfterAll {
   override val name: String = this.getClass.getName
 
   override def conf: Map[String, String] = {
+
     super.conf + (
+      //Where to store managed tables
       "spark.sql.warehouse.dir" -> warehouseConf,
-      "spark.hadoop.fs.default.name" -> hdfsCluster.getNameNodeURI()
+      //URI of the hdfs server
+      "spark.hadoop.fs.default.name" -> hdfsCluster.getNameNodeURI(),
+      //Hive metastore configuration
+      "spark.sql.catalogImplementation" -> "hive",
+      "spark.hadoop.javax.jdo.option.ConnectionDriverName" -> "org.apache.derby.jdbc.EmbeddedDriver",
+      "spark.hadoop.javax.jdo.option.ConnectionURL" -> "jdbc:derby:memory:myInMemDB;create=true"
     )
   }
 

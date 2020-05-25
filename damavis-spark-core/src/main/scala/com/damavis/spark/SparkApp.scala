@@ -17,7 +17,10 @@ trait SparkApp extends SparkConf {
     val configuredSpark = conf.foldLeft(sparkWithMaster) { (instance, keyVal) =>
       instance.config(keyVal._1, keyVal._2)
     }
-    configuredSpark.getOrCreate()
+
+    configuredSpark
+      .enableHiveSupport()
+      .getOrCreate()
   }
 
   /**

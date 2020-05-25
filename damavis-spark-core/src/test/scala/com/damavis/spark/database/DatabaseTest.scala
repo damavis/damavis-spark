@@ -45,7 +45,7 @@ class DatabaseTest extends SparkTestSupport {
 
       // "path" field contains the whole path within the warehouse
       // This value is non-deterministic: it changes each time the test is executed
-      // We will check that the table path in the database is as expected, since this is always the same
+      // We will check that the table path within the database is as expected, since this is always the same
       assert(table.options.path.endsWith("/test.db/persons"))
 
       val cleared =
