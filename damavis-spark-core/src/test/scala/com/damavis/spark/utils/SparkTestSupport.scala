@@ -9,7 +9,7 @@ import com.holdenkarau.spark.testing.HDFSCluster
 import org.scalatest.{BeforeAndAfterAll, WordSpec}
 
 class SparkTestSupport extends WordSpec with SparkApp with BeforeAndAfterAll {
-  override val name: String = this.getClass.getName
+  override val name: String = this.getClass.getName.split("\\.").last
 
   override def conf: Map[String, String] = {
 

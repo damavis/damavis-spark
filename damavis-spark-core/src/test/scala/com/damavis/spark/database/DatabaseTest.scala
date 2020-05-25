@@ -8,7 +8,7 @@ import scala.util.Try
 
 class DatabaseTest extends SparkTestSupport {
 
-  import spark.implicits._
+  import session.implicits._
 
   var db: Database = _
 

@@ -6,7 +6,9 @@ trait SparkApp extends SparkConf {
 
   val name: String
 
-  implicit lazy val spark: SparkSession = {
+  lazy val session: SparkSession = spark
+
+  implicit def spark: SparkSession = {
     val spark = SparkSession.builder().appName(name)
     val sparkWithMaster = {
       sys.env.get("MASTER") match {

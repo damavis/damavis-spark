@@ -4,6 +4,7 @@ val dependencies = Seq(
   "org.apache.spark" %% "spark-core" % sparkVersion % "provided",
   "org.apache.spark" %% "spark-sql" % sparkVersion % "provided",
   "org.apache.spark" %% "spark-hive" % sparkVersion % "provided",
+  "org.apache.spark" %% "spark-avro" % sparkVersion % "provided",
   "com.typesafe" % "config" % "1.3.2"
 )
 
@@ -17,7 +18,7 @@ val settings = Seq(
   organization := "com.damavis",
   version := "0.1.0-SNAPSHOT",
   isSnapshot := version.value.endsWith("SNAPSHOT"),
-  scalaVersion := "2.11.12", //Spark uses scala 2.11
+  scalaVersion := "2.12.11",
   libraryDependencies ++= dependencies ++ testDependencies,
   fork in Test := true,
   parallelExecution in Test := false,
