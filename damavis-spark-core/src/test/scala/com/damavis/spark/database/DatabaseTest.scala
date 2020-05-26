@@ -20,7 +20,7 @@ class DatabaseTest extends SparkTestSupport {
 
   "A database" should {
     "create a table with specified parameters" in {
-      val personDf = (Person("Person", 24) :: Nil).toDF()
+      val personDf = (Person("Person", 24, "ES") :: Nil).toDF()
       val schema = personDf.schema
 
       db.prepareTable("persons", Format.Parquet, schema, repair = false)

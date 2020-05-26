@@ -23,7 +23,10 @@ class TableResourceWriterTest extends SparkTestSupport {
 
   private def preparePersonsTable(): Table = {
     val schema = StructType(
-      StructField("name", StringType) :: StructField("age", IntegerType) :: Nil
+      StructField("name", StringType) ::
+        StructField("age", IntegerType) ::
+        StructField("nationality", StringType) ::
+        Nil
     )
     val tableName = s"persons${tableCount.addAndGet(1)}"
 
@@ -42,7 +45,7 @@ class TableResourceWriterTest extends SparkTestSupport {
         val table = preparePersonsTable()
         val writer = TableWriterBuilder(table).writer()
 
-        val personDf = (Person("Orson Scott", 68) :: Nil).toDF()
+        val personDf = (Person("Orson Scott", 68, "USA") :: Nil).toDF()
         writer.write(personDf)
 
         val written = session.read.parquet(table.options.path)
@@ -50,7 +53,7 @@ class TableResourceWriterTest extends SparkTestSupport {
         assert(written.count() == 1)
 
         val firstRow = written.collect().head
-        val expectedRow = Row("Orson Scott", 68)
+        val expectedRow = Row("Orson Scott", 68, "USA")
 
         assert(firstRow == expectedRow)
       }
@@ -59,12 +62,12 @@ class TableResourceWriterTest extends SparkTestSupport {
         val table = preparePersonsTable()
         val writerBuilder = TableWriterBuilder(table)
 
-        val person1 = (Person("Orson Scott", 68) :: Nil).toDF()
+        val person1 = (Person("Orson Scott", 68, "USA") :: Nil).toDF()
         writerBuilder
           .writer()
           .write(person1)
 
-        val person2 = (Person("Wells", 79) :: Nil).toDF()
+        val person2 = (Person("Wells", 79, "UK") :: Nil).toDF()
         writerBuilder
           .saveMode(SaveMode.Append)
           .writer()
@@ -73,8 +76,8 @@ class TableResourceWriterTest extends SparkTestSupport {
         val written = session.read.parquet(table.options.path)
         assert(written.count() == 2)
 
-        val expectedDf = (Person("Orson Scott", 68) ::
-          Person("Wells", 79) ::
+        val expectedDf = (Person("Orson Scott", 68, "USA") ::
+          Person("Wells", 79, "UK") ::
           Nil).toDF()
         assert(written.except(expectedDf).isEmpty)
       }
@@ -83,12 +86,12 @@ class TableResourceWriterTest extends SparkTestSupport {
         val table = preparePersonsTable()
         val writerBuilder = TableWriterBuilder(table)
 
-        val person1 = (Person("Orson Scott", 68) :: Nil).toDF()
+        val person1 = (Person("Orson Scott", 68, "USA") :: Nil).toDF()
         writerBuilder
           .writer()
           .write(person1)
 
-        val person2 = (Person("Wells", 79) :: Nil).toDF()
+        val person2 = (Person("Wells", 79, "UK") :: Nil).toDF()
         writerBuilder
           .saveMode(SaveMode.Overwrite)
           .writer()

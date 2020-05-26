@@ -22,7 +22,7 @@ class TableResourceReaderTest extends SparkTestSupport {
   }
 
   private def prepareDatabase(): Unit = {
-    val personDf = (Person("Douglas Adams", 49) :: Nil).toDF()
+    val personDf = (Person("Douglas Adams", 49, "UK") :: Nil).toDF()
     val schema = personDf.schema
 
     db.prepareTable(tableName, Format.Avro, schema)
@@ -44,7 +44,7 @@ class TableResourceReaderTest extends SparkTestSupport {
       assert(obtained.count() == 1)
 
       val firstRow = obtained.collect().head
-      val expectedRow = Row("Douglas Adams", 49)
+      val expectedRow = Row("Douglas Adams", 49, "UK")
 
       assert(firstRow == expectedRow)
     }

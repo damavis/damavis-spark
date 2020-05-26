@@ -10,7 +10,7 @@ class HadoopFSTest extends SparkTestSupport {
   override def beforeAll(): Unit = {
     super.beforeAll()
 
-    (Person("person1", 23) :: Person("person2", 346) :: Nil)
+    (Person("person1", 23, "ES") :: Person("person2", 346, "ES") :: Nil)
       .toDF()
       .write
       .format("parquet")
