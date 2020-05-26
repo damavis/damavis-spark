@@ -3,17 +3,16 @@ package com.damavis.spark.resource.datasource
 import java.util.concurrent.atomic.AtomicInteger
 
 import com.damavis.spark.database.{Database, DbManager, Table}
-import com.damavis.spark.entities.Person
 import com.damavis.spark.resource.datasource.enums.{
   Format,
   OverwritePartitionBehavior
 }
 import com.damavis.spark.utils.SparkTestSupport
-import org.apache.spark.sql.{Row, SaveMode}
+import org.apache.spark.sql.SaveMode
 import org.apache.spark.sql.types._
+import com.damavis.spark._
 
 class TableResourceWriterTest extends SparkTestSupport {
-  import session.implicits._
 
   var db: Database = _
   val tableCount = new AtomicInteger(0)
@@ -52,29 +51,25 @@ class TableResourceWriterTest extends SparkTestSupport {
         val table = prepareNotPartitionedTable()
         val writer = TableWriterBuilder(table).writer()
 
-        val personDf = (Person("Orson Scott", 68, "USA") :: Nil).toDF()
+        val personDf = dfFromAuthors(orson)
         writer.write(personDf)
 
         val written = session.read.parquet(table.options.path)
 
         assert(written.count() == 1)
-
-        val firstRow = written.collect().head
-        val expectedRow = Row("Orson Scott", 68, "USA")
-
-        assert(firstRow == expectedRow)
+        assert(written.except(personDf).isEmpty)
       }
 
       "apply properly append save mode" in {
         val table = prepareNotPartitionedTable()
         val writerBuilder = TableWriterBuilder(table)
 
-        val person1 = (Person("Orson Scott", 68, "USA") :: Nil).toDF()
+        val person1 = dfFromAuthors(orson)
         writerBuilder
           .writer()
           .write(person1)
 
-        val person2 = (Person("Wells", 79, "UK") :: Nil).toDF()
+        val person2 = dfFromAuthors(wells)
         writerBuilder
           .saveMode(SaveMode.Append)
           .writer()
@@ -83,9 +78,7 @@ class TableResourceWriterTest extends SparkTestSupport {
         val written = session.read.parquet(table.options.path)
         assert(written.count() == 2)
 
-        val expectedDf = (Person("Orson Scott", 68, "USA") ::
-          Person("Wells", 79, "UK") ::
-          Nil).toDF()
+        val expectedDf = dfFromAuthors(orson, wells)
         assert(written.except(expectedDf).isEmpty)
       }
 
@@ -93,12 +86,12 @@ class TableResourceWriterTest extends SparkTestSupport {
         val table = prepareNotPartitionedTable()
         val writerBuilder = TableWriterBuilder(table)
 
-        val person1 = (Person("Orson Scott", 68, "USA") :: Nil).toDF()
+        val person1 = dfFromAuthors(orson)
         writerBuilder
           .writer()
           .write(person1)
 
-        val person2 = (Person("Wells", 79, "UK") :: Nil).toDF()
+        val person2 = dfFromAuthors(wells)
         writerBuilder
           .saveMode(SaveMode.Overwrite)
           .writer()
@@ -118,17 +111,13 @@ class TableResourceWriterTest extends SparkTestSupport {
           .partitionedBy("nationality")
           .writer()
 
-        val personDf = (Person("Orson Scott", 68, "USA") :: Nil).toDF()
+        val personDf = dfFromAuthors(orson)
         writer.write(personDf)
 
         val written = session.read.parquet(table.options.path)
 
         assert(written.count() == 1)
-
-        val firstRow = written.collect().head
-        val expectedRow = Row("Orson Scott", 68, "USA")
-
-        assert(firstRow == expectedRow)
+        assert(written.except(personDf).isEmpty)
       }
 
       "overwrite all partitions by default" in {
@@ -137,12 +126,10 @@ class TableResourceWriterTest extends SparkTestSupport {
           .partitionedBy("nationality")
           .writer()
 
-        val authors = (Person("Orson Scott", 68, "USA") ::
-          Person("Wells", 79, "UK") ::
-          Nil).toDF()
+        val authors = dfFromAuthors(orson, wells)
         writer.write(authors)
 
-        val anotherUSAAuthor = (Person("Ray Bradbury", 91, "USA") :: Nil).toDF()
+        val anotherUSAAuthor = dfFromAuthors(bradbury)
         writer.write(anotherUSAAuthor)
 
         val finalDf = session.read.parquet(table.options.path)
@@ -158,12 +145,10 @@ class TableResourceWriterTest extends SparkTestSupport {
           .overwritePartitionBehavior(OverwritePartitionBehavior.OVERWRITE_ALL)
           .writer()
 
-        val authors = (Person("Orson Scott", 68, "USA") ::
-          Person("Wells", 79, "UK") ::
-          Nil).toDF()
+        val authors = dfFromAuthors(orson, wells)
         writer.write(authors)
 
-        val anotherUSAAuthor = (Person("Ray Bradbury", 91, "USA") :: Nil).toDF()
+        val anotherUSAAuthor = dfFromAuthors(bradbury)
         writer.write(anotherUSAAuthor)
 
         val finalDf = session.read.parquet(table.options.path)
@@ -180,19 +165,15 @@ class TableResourceWriterTest extends SparkTestSupport {
             OverwritePartitionBehavior.OVERWRITE_MATCHING)
           .writer()
 
-        val authors = (Person("Orson Scott", 68, "USA") ::
-          Person("Wells", 79, "UK") ::
-          Nil).toDF()
+        val authors = dfFromAuthors(orson, wells)
         writer.write(authors)
 
-        val anotherUSAAuthor = (Person("Ray Bradbury", 91, "USA") :: Nil).toDF()
+        val anotherUSAAuthor = dfFromAuthors(bradbury)
         writer.write(anotherUSAAuthor)
 
         val finalDf = session.read.parquet(table.options.path)
 
-        val expectedAuthors = (Person("Ray Bradbury", 91, "USA") ::
-          Person("Wells", 79, "UK") ::
-          Nil).toDF()
+        val expectedAuthors = dfFromAuthors(bradbury, wells)
 
         assert(finalDf.count() == 2)
         assert(finalDf.except(expectedAuthors).count() == 0)
@@ -205,20 +186,15 @@ class TableResourceWriterTest extends SparkTestSupport {
           .saveMode(SaveMode.Append)
           .writer()
 
-        val authors = (Person("Orson Scott", 68, "USA") ::
-          Person("Wells", 79, "UK") ::
-          Nil).toDF()
+        val authors = dfFromAuthors(orson, wells)
         writer.write(authors)
 
-        val anotherUSAAuthor = (Person("Ray Bradbury", 91, "USA") :: Nil).toDF()
+        val anotherUSAAuthor = dfFromAuthors(bradbury)
         writer.write(anotherUSAAuthor)
 
         val finalDf = session.read.parquet(table.options.path)
 
-        val expectedAuthors = (Person("Orson Scott", 68, "USA") ::
-          Person("Wells", 79, "UK") ::
-          Person("Ray Bradbury", 91, "USA") ::
-          Nil).toDF()
+        val expectedAuthors = dfFromAuthors(orson, wells, bradbury)
 
         assert(finalDf.count() == 3)
         assert(finalDf.except(expectedAuthors).count() == 0)
