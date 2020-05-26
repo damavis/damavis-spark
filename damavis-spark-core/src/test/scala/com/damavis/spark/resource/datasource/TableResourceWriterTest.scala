@@ -4,7 +4,10 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import com.damavis.spark.database.{Database, DbManager, Table}
 import com.damavis.spark.entities.Person
-import com.damavis.spark.resource.datasource.enums.Format
+import com.damavis.spark.resource.datasource.enums.{
+  Format,
+  OverwritePartitionBehavior
+}
 import com.damavis.spark.utils.SparkTestSupport
 import org.apache.spark.sql.{Row, SaveMode}
 import org.apache.spark.sql.types._
@@ -101,6 +104,113 @@ class TableResourceWriterTest extends SparkTestSupport {
 
         assert(written.count() == 1)
         assert(written.except(person2).isEmpty)
+      }
+    }
+
+    "there is partitioning" should {
+      "write successfully to an empty table" in {
+        val table = preparePersonsTable()
+        val writer = TableWriterBuilder(table)
+          .partitionedBy("nationality")
+          .writer()
+
+        val personDf = (Person("Orson Scott", 68, "USA") :: Nil).toDF()
+        writer.write(personDf)
+
+        val written = session.read.parquet(table.options.path)
+
+        assert(written.count() == 1)
+
+        val firstRow = written.collect().head
+        val expectedRow = Row("Orson Scott", 68, "USA")
+
+        assert(firstRow == expectedRow)
+      }
+
+      "overwrite all partitions by default" in {
+        val table = preparePersonsTable()
+        val writer = TableWriterBuilder(table)
+          .partitionedBy("nationality")
+          .writer()
+
+        val authors = (Person("Orson Scott", 68, "USA") ::
+          Person("Wells", 79, "UK") ::
+          Nil).toDF()
+        writer.write(authors)
+
+        val anotherUSAAuthor = (Person("Ray Bradbury", 91, "USA") :: Nil).toDF()
+        writer.write(anotherUSAAuthor)
+
+        val finalDf = session.read.parquet(table.options.path)
+
+        assert(finalDf.count() == 1)
+        assert(finalDf.except(anotherUSAAuthor).count() == 0)
+      }
+
+      "overwrite all partitions if told so" in {
+        val table = preparePersonsTable()
+        val writer = TableWriterBuilder(table)
+          .partitionedBy("nationality")
+          .overwritePartitionBehavior(OverwritePartitionBehavior.OVERWRITE_ALL)
+          .writer()
+
+        val authors = (Person("Orson Scott", 68, "USA") ::
+          Person("Wells", 79, "UK") ::
+          Nil).toDF()
+        writer.write(authors)
+
+        val anotherUSAAuthor = (Person("Ray Bradbury", 91, "USA") :: Nil).toDF()
+        writer.write(anotherUSAAuthor)
+
+        val finalDf = session.read.parquet(table.options.path)
+
+        assert(finalDf.count() == 1)
+        assert(finalDf.except(anotherUSAAuthor).count() == 0)
+      }
+
+      "overwrite only matching partitions if parameter is set" in {
+        val table = preparePersonsTable()
+        val writer = TableWriterBuilder(table)
+          .partitionedBy("nationality")
+          .overwritePartitionBehavior(
+            OverwritePartitionBehavior.OVERWRITE_MATCHING)
+          .writer()
+
+        val authors = (Person("Orson Scott", 68, "USA") ::
+          Person("Wells", 79, "UK") ::
+          Nil).toDF()
+        writer.write(authors)
+
+        val anotherUSAAuthor = (Person("Ray Bradbury", 91, "USA") :: Nil).toDF()
+        writer.write(anotherUSAAuthor)
+
+        val finalDf = session.read.parquet(table.options.path)
+
+        val expectedAuthors = (Person("Ray Bradbury", 91, "USA") ::
+          Person("Wells", 79, "UK") ::
+          Nil).toDF()
+
+        assert(finalDf.count() == 2)
+        assert(finalDf.except(expectedAuthors).count() == 0)
+      }
+
+      "do not overwrite anything if save mode is different than overwrite" in {
+        val table = preparePersonsTable()
+        val writer = TableWriterBuilder(table)
+          .partitionedBy("nationality")
+          .saveMode(SaveMode.Append)
+          .writer()
+
+        val authors = (Person("Orson Scott", 68, "USA") ::
+          Person("Wells", 79, "UK") ::
+          Nil).toDF()
+        writer.write(authors)
+
+        val anotherUSAAuthor = (Person("Ray Bradbury", 91, "USA") :: Nil).toDF()
+        writer.write(anotherUSAAuthor)
+
+        val finalDf = session.read.parquet(table.options.path)
+        finalDf.show(false)
       }
     }
   }

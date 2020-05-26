@@ -19,7 +19,7 @@ class TableWriterBuilder(table: Table, params: TableWriterParameters)(
   override def writer(): ResourceWriter =
     new TableResourceWriter(spark, table, params)
 
-  def partitionedBy(columns: Seq[String]): TableWriterBuilder = {
+  def partitionedBy(columns: String*): TableWriterBuilder = {
     val newParams = params.copy(partitionedBy = Some(columns))
 
     new TableWriterBuilder(table, newParams)
