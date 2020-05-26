@@ -1,13 +1,12 @@
 package com.damavis.spark.resource.datasource
 
-import com.damavis.spark.database.{Database, Table}
+import com.damavis.spark.database.Table
 import com.damavis.spark.resource.datasource.enums.OverwritePartitionBehavior._
 import com.damavis.spark.resource.{ResourceWriter, WriterBuilder}
 import org.apache.spark.sql.{SaveMode, SparkSession}
 
 object TableWriterBuilder {
-  def apply(table: Table)(implicit spark: SparkSession,
-                          db: Database): TableWriterBuilder = {
+  def apply(table: Table)(implicit spark: SparkSession): TableWriterBuilder = {
     val params = TableWriterParameters()
 
     new TableWriterBuilder(table, params)
@@ -15,8 +14,7 @@ object TableWriterBuilder {
 }
 
 class TableWriterBuilder(table: Table, params: TableWriterParameters)(
-    implicit spark: SparkSession,
-    db: Database)
+    implicit spark: SparkSession)
     extends WriterBuilder {
   override def writer(): ResourceWriter =
     new TableResourceWriter(spark, table, params)

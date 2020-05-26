@@ -38,7 +38,7 @@ class TableResourceReaderTest extends SparkTestSupport {
       assert(tryTable.isSuccess)
 
       val table = tryTable.get
-      val reader = new TableResourceReader(spark, table)
+      val reader = new TableReaderBuilder(table).reader()
       val obtained = reader.read()
 
       assert(obtained.count() == 1)
