@@ -24,7 +24,7 @@ class TableResourceWriterTest extends SparkTestSupport {
     db = DbManager.useDatabase(name, forceCreation = true)
   }
 
-  private def preparePersonsTable(): Table = {
+  private def preparePersonsTable(partitionCols: Seq[String]): Table = {
     val schema = StructType(
       StructField("name", StringType) ::
         StructField("age", IntegerType) ::
@@ -33,7 +33,7 @@ class TableResourceWriterTest extends SparkTestSupport {
     )
     val tableName = s"persons${tableCount.addAndGet(1)}"
 
-    db.prepareTable(tableName, Format.Parquet, schema)
+    db.prepareTable(tableName, Format.Parquet, schema, partitionCols)
 
     val tryTable = db.getTable(tableName)
 
@@ -42,10 +42,14 @@ class TableResourceWriterTest extends SparkTestSupport {
     tryTable.get
   }
 
+  private def prepareNotPartitionedTable(): Table = preparePersonsTable(Nil)
+  private def preparePartitionedTable(): Table =
+    preparePersonsTable("nationality" :: Nil)
+
   "A TableResourceWriter" when {
     "there is no partitioning" should {
       "write successfully to an empty table" in {
-        val table = preparePersonsTable()
+        val table = prepareNotPartitionedTable()
         val writer = TableWriterBuilder(table).writer()
 
         val personDf = (Person("Orson Scott", 68, "USA") :: Nil).toDF()
@@ -62,7 +66,7 @@ class TableResourceWriterTest extends SparkTestSupport {
       }
 
       "apply properly append save mode" in {
-        val table = preparePersonsTable()
+        val table = prepareNotPartitionedTable()
         val writerBuilder = TableWriterBuilder(table)
 
         val person1 = (Person("Orson Scott", 68, "USA") :: Nil).toDF()
@@ -86,7 +90,7 @@ class TableResourceWriterTest extends SparkTestSupport {
       }
 
       "apply properly overwrite save mode" in {
-        val table = preparePersonsTable()
+        val table = prepareNotPartitionedTable()
         val writerBuilder = TableWriterBuilder(table)
 
         val person1 = (Person("Orson Scott", 68, "USA") :: Nil).toDF()
@@ -109,7 +113,7 @@ class TableResourceWriterTest extends SparkTestSupport {
 
     "there is partitioning" should {
       "write successfully to an empty table" in {
-        val table = preparePersonsTable()
+        val table = preparePartitionedTable()
         val writer = TableWriterBuilder(table)
           .partitionedBy("nationality")
           .writer()
@@ -128,7 +132,7 @@ class TableResourceWriterTest extends SparkTestSupport {
       }
 
       "overwrite all partitions by default" in {
-        val table = preparePersonsTable()
+        val table = preparePartitionedTable()
         val writer = TableWriterBuilder(table)
           .partitionedBy("nationality")
           .writer()
@@ -148,7 +152,7 @@ class TableResourceWriterTest extends SparkTestSupport {
       }
 
       "overwrite all partitions if told so" in {
-        val table = preparePersonsTable()
+        val table = preparePartitionedTable()
         val writer = TableWriterBuilder(table)
           .partitionedBy("nationality")
           .overwritePartitionBehavior(OverwritePartitionBehavior.OVERWRITE_ALL)
@@ -169,7 +173,7 @@ class TableResourceWriterTest extends SparkTestSupport {
       }
 
       "overwrite only matching partitions if parameter is set" in {
-        val table = preparePersonsTable()
+        val table = preparePartitionedTable()
         val writer = TableWriterBuilder(table)
           .partitionedBy("nationality")
           .overwritePartitionBehavior(
@@ -195,7 +199,7 @@ class TableResourceWriterTest extends SparkTestSupport {
       }
 
       "do not overwrite anything if save mode is different than overwrite" in {
-        val table = preparePersonsTable()
+        val table = preparePartitionedTable()
         val writer = TableWriterBuilder(table)
           .partitionedBy("nationality")
           .saveMode(SaveMode.Append)
@@ -210,7 +214,14 @@ class TableResourceWriterTest extends SparkTestSupport {
         writer.write(anotherUSAAuthor)
 
         val finalDf = session.read.parquet(table.options.path)
-        finalDf.show(false)
+
+        val expectedAuthors = (Person("Orson Scott", 68, "USA") ::
+          Person("Wells", 79, "UK") ::
+          Person("Ray Bradbury", 91, "USA") ::
+          Nil).toDF()
+
+        assert(finalDf.count() == 3)
+        assert(finalDf.except(expectedAuthors).count() == 0)
       }
     }
   }
