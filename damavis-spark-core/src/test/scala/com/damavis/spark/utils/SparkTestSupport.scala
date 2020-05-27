@@ -1,9 +1,5 @@
 package com.damavis.spark.utils
 
-import java.io.File
-import java.nio.file.Files
-
-import scala.reflect.io.Directory
 import com.damavis.spark.SparkApp
 import com.holdenkarau.spark.testing.HDFSCluster
 import org.scalatest.{BeforeAndAfterAll, WordSpec}
@@ -32,10 +28,7 @@ class SparkTestSupport extends WordSpec with SparkApp with BeforeAndAfterAll {
     super.beforeAll()
 
     val className = name.split("\\.").last
-    val warehousePath =
-      Files.createTempDirectory(s"sparktest-$className-warehouse-")
-
-    warehouseConf = warehousePath.toString
+    warehouseConf = s"/sparktest-$className-warehouse"
 
     hdfsCluster = new HDFSCluster
     hdfsCluster.startHDFS()
@@ -43,10 +36,6 @@ class SparkTestSupport extends WordSpec with SparkApp with BeforeAndAfterAll {
 
   override def afterAll(): Unit = {
     hdfsCluster.shutdownHDFS()
-
-    val directory = new Directory(new File(warehouseConf))
-
-    directory.deleteRecursively()
 
     super.afterAll()
   }
