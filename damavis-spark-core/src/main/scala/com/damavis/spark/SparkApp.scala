@@ -6,23 +6,29 @@ trait SparkApp extends SparkConf {
 
   val name: String
 
+  private var mutableSession: SparkSession = _
   lazy val session: SparkSession = spark
 
   implicit def spark: SparkSession = {
-    val spark = SparkSession.builder().appName(name)
-    val sparkWithMaster = {
-      sys.env.get("MASTER") match {
-        case Some(master) => spark.master(master)
-        case _            => spark
+    if (mutableSession == null) {
+      val spark = SparkSession.builder().appName(name)
+      val sparkWithMaster = {
+        sys.env.get("MASTER") match {
+          case Some(master) => spark.master(master)
+          case _            => spark
+        }
       }
-    }
-    val configuredSpark = conf.foldLeft(sparkWithMaster) { (instance, keyVal) =>
-      instance.config(keyVal._1, keyVal._2)
+      val configuredSpark = conf.foldLeft(sparkWithMaster) {
+        (instance, keyVal) =>
+          instance.config(keyVal._1, keyVal._2)
+      }
+
+      mutableSession = configuredSpark
+        .enableHiveSupport()
+        .getOrCreate()
     }
 
-    configuredSpark
-      .enableHiveSupport()
-      .getOrCreate()
+    mutableSession
   }
 
   /**
