@@ -52,7 +52,7 @@ class Database(
       if (catalog.tableExists(actualName))
         innerGetTable(actualName)
       else
-        DummyTable(this, name)
+        DummyTable(db.name, name)
     }
   }
 
@@ -76,17 +76,11 @@ class Database(
 
         tableMeta
       } else {
-        createExternalTable(actualName, path, format)
+        catalog.createTable(name, path, format.toString)
+
+        RealTable(db.name, name, path, format, managed = false)
       }
     }
-  }
-
-  private def createExternalTable(name: String,
-                                  path: String,
-                                  format: Format.Format): Table = {
-    catalog.createTable(name, path, format.toString)
-
-    RealTable(this, name, path, format, managed = false)
   }
 
   private def validateExternalTable(table: Table,
@@ -132,7 +126,7 @@ class Database(
     val format = Format.withName(fields(1).getString(0).toLowerCase)
     val managed = fields(2).getString(0) == "MANAGED"
 
-    RealTable(this, name, path, format, managed)
+    RealTable(db.name, name, path, format, managed)
   }
 
   private def parseTableName(name: String): (String, String) =

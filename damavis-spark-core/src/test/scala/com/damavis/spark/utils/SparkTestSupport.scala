@@ -4,8 +4,12 @@ import com.damavis.spark.SparkApp
 import com.holdenkarau.spark.testing.HDFSCluster
 import org.scalatest.{BeforeAndAfterAll, WordSpec}
 
+import scala.util.Try
+
 class SparkTestSupport extends WordSpec with SparkApp with BeforeAndAfterAll {
   override val name: String = this.getClass.getName.split("\\.").last
+
+  protected def root: String = hdfsCluster.getNameNodeURI()
 
   override def conf: Map[String, String] = {
 
@@ -38,5 +42,20 @@ class SparkTestSupport extends WordSpec with SparkApp with BeforeAndAfterAll {
     hdfsCluster.shutdownHDFS()
 
     super.afterAll()
+  }
+
+  def checkExceptionOfType[T <: Throwable](tryResult: Try[_],
+                                           pattern: String): Unit = {
+    assert(tryResult.isFailure)
+
+    try {
+      throw tryResult.failed.get
+    } catch {
+      case ex: T =>
+        assert(ex.getMessage.contains(pattern))
+      case _ =>
+        //Not expected exception type
+        assert(false)
+    }
   }
 }

@@ -22,13 +22,13 @@ class TableResourceReaderTest extends SparkTestSupport {
   }
 
   private def prepareDatabase(): Unit = {
-    val personDf = (Person("Douglas Adams", 49, "UK") :: Nil).toDF()
+    /*val personDf = (Person("Douglas Adams", 49, "UK") :: Nil).toDF()
     val schema = personDf.schema
 
     db.prepareTable(tableName, Format.Avro, schema)
 
     personDf.write
-      .insertInto(tableName)
+      .insertInto(tableName) */
   }
 
   "A TableResourceReader" should {

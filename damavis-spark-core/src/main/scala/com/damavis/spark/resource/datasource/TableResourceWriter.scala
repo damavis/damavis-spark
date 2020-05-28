@@ -1,12 +1,13 @@
 package com.damavis.spark.resource.datasource
 
-import com.damavis.spark.database.Table
+import com.damavis.spark.database.{Database, Table}
 import com.damavis.spark.resource.ResourceWriter
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 import enums.OverwritePartitionBehavior
 
 class TableResourceWriter(spark: SparkSession,
                           table: Table,
+                          db: Database,
                           params: TableWriterParameters)
     extends ResourceWriter {
 
@@ -17,8 +18,7 @@ class TableResourceWriter(spark: SparkSession,
     val format = params.storageFormat
     val partitionedBy = params.partitionedBy.getOrElse(Nil)
 
-    actualTable =
-      table.database.addTableIfNotExists(table, schema, format, partitionedBy)
+    actualTable = db.addTableIfNotExists(table, schema, format, partitionedBy)
   }
 
   override def write(data: DataFrame): Unit = {

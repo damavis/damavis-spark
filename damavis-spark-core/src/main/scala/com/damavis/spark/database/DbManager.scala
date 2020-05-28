@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory
 object DbManager {
 
   private def checkDatabaseName(name: String): Unit = {
-    // Enforcing Hive's database naming restrictions (only alphanumeric and "-" characters allowed)
+    // Enforcing Hive's database naming restrictions (only alphanumeric and "_" characters allowed)
     // Check: https://cwiki.apache.org/confluence/display/Hive/LanguageManual+DDL
 
     val normalizedName = name.replace("_", "")
