@@ -9,7 +9,21 @@ class TableResourceWriter(spark: SparkSession,
                           table: Table,
                           params: TableWriterParameters)
     extends ResourceWriter {
+
+  private var actualTable: Table = table
+
+  private def updateCatalogBeforeWrite(data: DataFrame): Unit = {
+    val schema = data.schema
+    val format = params.storageFormat
+    val partitionedBy = params.partitionedBy.getOrElse(Nil)
+
+    actualTable =
+      table.database.addTableIfNotExists(table, schema, format, partitionedBy)
+  }
+
   override def write(data: DataFrame): Unit = {
+    updateCatalogBeforeWrite(data)
+
     val previousOverwriteConf =
       spark.conf.get("spark.sql.sources.partitionOverwriteMode")
 
@@ -31,10 +45,10 @@ class TableResourceWriter(spark: SparkSession,
 
     try {
       partitionWriter
-        .format(s"${table.format}")
-        .option("path", table.path)
+        .format(s"${actualTable.format}")
+        .option("path", actualTable.path)
         .mode(params.saveMode)
-        .saveAsTable(table.name)
+        .saveAsTable(actualTable.name)
     } catch {
       case e: Throwable => throw e
     } finally {

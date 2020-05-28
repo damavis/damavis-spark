@@ -3,6 +3,7 @@ package com.damavis.spark.database
 import com.damavis.spark.database.exceptions._
 import com.damavis.spark.fs.FileSystem
 import com.damavis.spark.resource.datasource.enums.Format
+import com.damavis.spark.resource.datasource.enums.Format.Format
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.catalog.{Catalog, Database => SparkDatabase}
@@ -19,6 +20,8 @@ class Database(
 
   private lazy val logger = LoggerFactory.getLogger(this.getClass)
 
+  def name: String = db.name
+
   def tableExists(table: String): Boolean = {
     val dbPath = parseTableName(table)
 
@@ -26,20 +29,20 @@ class Database(
     else catalog.tableExists(dbPath._2)
   }
 
-  @deprecated
-  def prepareTable(name: String,
-                   format: Format.Format,
-                   schema: StructType,
-                   partitionCols: Seq[String] = Nil,
-                   repair: Boolean = false): Unit = {
-    val dbPath = parseAndCheckTableName(name)
-    val actualName = dbPath._2
+  def addTableIfNotExists(table: Table,
+                          schema: StructType,
+                          format: Format,
+                          partitionedBy: Seq[String]): Table = {
+    table match {
+      case real: RealTable => real
+      case _: DummyTable =>
+        val name = table.name
 
-    if (!tableExists(actualName)) {
-      createTable(actualName, format, schema, partitionCols: _*)
+        if (!tableExists(name))
+          createManagedTable(name, format, schema, partitionedBy: _*)
+
+        innerGetTable(name)
     }
-
-    if (repair) repairTable(actualName)
   }
 
   def getTable(name: String): Try[Table] = {
@@ -49,7 +52,7 @@ class Database(
       if (catalog.tableExists(actualName))
         innerGetTable(actualName)
       else
-        DummyTable(db.name, name)
+        DummyTable(this, name)
     }
   }
 
@@ -73,7 +76,7 @@ class Database(
 
         tableMeta
       } else {
-        createExternalTable(name, path, format)
+        createExternalTable(actualName, path, format)
       }
     }
   }
@@ -83,7 +86,7 @@ class Database(
                                   format: Format.Format): Table = {
     catalog.createTable(name, path, format.toString)
 
-    ConcreteTable(db.name, name, path, format, managed = false)
+    RealTable(this, name, path, format, managed = false)
   }
 
   private def validateExternalTable(table: Table,
@@ -129,7 +132,7 @@ class Database(
     val format = Format.withName(fields(1).getString(0).toLowerCase)
     val managed = fields(2).getString(0) == "MANAGED"
 
-    ConcreteTable(db.name, name, path, format, managed)
+    RealTable(this, name, path, format, managed)
   }
 
   private def parseTableName(name: String): (String, String) =
@@ -156,10 +159,10 @@ class Database(
     dbParts
   }
 
-  private def createTable(name: String,
-                          format: Format.Format,
-                          schema: StructType,
-                          partitionColumns: String*): Unit = {
+  private def createManagedTable(name: String,
+                                 format: Format.Format,
+                                 schema: StructType,
+                                 partitionColumns: String*): Unit = {
     /*NOTE: As of current Spark version (2.4.5), is not possible to create a partitioned HIVE table using
      * the catalog interface
      * Check spark issue: https://issues.apache.org/jira/browse/SPARK-31001
@@ -176,6 +179,7 @@ class Database(
                                 format: Format.Format,
                                 schema: StructType,
                                 partitionBy: String*): Unit = {
+    //TODO: check if this is necessary
     val serdeParams = format match {
       case Format.Parquet =>
         ("org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe",
@@ -200,12 +204,4 @@ class Database(
     spark.sql(ddl)
   }
 
-  private def repairTable(name: String): Unit = {
-    logger.warn(s"Repairing table: $name")
-    spark.sql(s"MSCK REPAIR TABLE $name")
-
-    /*NOTE: In case of using Delta Lake, FSCK function may be also suitable here
-   * check: https://docs.databricks.com/spark/latest/spark-sql/language-manual/fsck.html
-   */
-  }
 }

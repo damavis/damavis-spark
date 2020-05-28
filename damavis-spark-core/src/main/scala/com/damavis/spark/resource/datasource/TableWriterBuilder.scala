@@ -1,6 +1,7 @@
 package com.damavis.spark.resource.datasource
 
 import com.damavis.spark.database.Table
+import com.damavis.spark.resource.datasource.enums.Format.Format
 import com.damavis.spark.resource.datasource.enums.OverwritePartitionBehavior._
 import com.damavis.spark.resource.{ResourceWriter, WriterBuilder}
 import org.apache.spark.sql.{SaveMode, SparkSession}
@@ -18,6 +19,12 @@ class TableWriterBuilder(table: Table, params: TableWriterParameters)(
     extends WriterBuilder {
   override def writer(): ResourceWriter =
     new TableResourceWriter(spark, table, params)
+
+  def withFormat(format: Format): TableWriterBuilder = {
+    val newParams = params.copy(storageFormat = format)
+
+    new TableWriterBuilder(table, newParams)
+  }
 
   def partitionedBy(columns: String*): TableWriterBuilder = {
     val newParams = params.copy(partitionedBy = Some(columns))
