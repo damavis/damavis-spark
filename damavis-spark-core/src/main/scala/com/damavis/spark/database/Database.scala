@@ -1,17 +1,21 @@
 package com.damavis.spark.database
 
+import com.damavis.spark.database.exceptions._
+import com.damavis.spark.fs.FileSystem
 import com.damavis.spark.resource.datasource.enums.Format
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.functions._
 import org.apache.spark.sql.catalog.{Catalog, Database => SparkDatabase}
-import org.apache.spark.sql.types.{StructField, StructType}
+import org.apache.spark.sql.types.StructType
 import org.slf4j.LoggerFactory
 
 import scala.language.postfixOps
 import scala.util.Try
 
-class Database(db: SparkDatabase, protected[database] val catalog: Catalog)(
-    implicit spark: SparkSession) {
+class Database(
+    db: SparkDatabase,
+    fs: FileSystem,
+    protected[database] val catalog: Catalog)(implicit spark: SparkSession) {
 
   private lazy val logger = LoggerFactory.getLogger(this.getClass)
 
@@ -22,6 +26,7 @@ class Database(db: SparkDatabase, protected[database] val catalog: Catalog)(
     else catalog.tableExists(dbPath._2)
   }
 
+  @deprecated
   def prepareTable(name: String,
                    format: Format.Format,
                    schema: StructType,
@@ -39,26 +44,89 @@ class Database(db: SparkDatabase, protected[database] val catalog: Catalog)(
 
   def getTable(name: String): Try[Table] = {
     Try {
+      val actualName = parseAndCheckTableName(name)._2
+
+      innerGetTable(actualName)
+    }
+  }
+
+  def getExternalTable(name: String,
+                       path: String,
+                       format: Format.Format): Try[Table] = {
+    Try {
       val dbPath = parseAndCheckTableName(name)
       val actualName = dbPath._2
 
-      val tableMeta = spark.sql(s"DESCRIBE TABLE FORMATTED $actualName")
+      if (!fs.pathExists(path)) {
+        val msg =
+          s"""Requested external table $name from path: "$path".
+             |Path not reachable in the provided filesystem""".stripMargin
+        throw new TableAccessException(msg)
+      }
 
-      val requiredFields = "Location" :: "Provider" :: "Type" :: Nil
+      if (catalog.tableExists(actualName)) {
+        val tableMeta = innerGetTable(actualName)
+        validateExternalTable(tableMeta, actualName, path, format)
 
-      val fields = tableMeta
-        .filter(col("col_name").isInCollection(requiredFields))
-        .orderBy(col("col_name") asc)
-        .select("data_type")
-        .collect()
-
-      val location = fields(0).getString(0)
-      val format = Format.withName(fields(1).getString(0).toLowerCase)
-      val managed = fields(2).getString(0) == "MANAGED"
-      val options = TableOptions(location, format, managed)
-
-      Table(db.name, actualName, options)
+        tableMeta
+      } else {
+        createExternalTable(name, path, format)
+      }
     }
+  }
+
+  private def createExternalTable(name: String,
+                                  path: String,
+                                  format: Format.Format): Table = {
+    catalog.createTable(name, path, format.toString)
+
+    Table(db.name, name, path, format, false)
+  }
+
+  private def validateExternalTable(table: Table,
+                                    name: String,
+                                    requestedPath: String,
+                                    requestedFormat: Format.Format): Unit = {
+    if (table.managed) {
+      val msg =
+        s"""Requested external table $name, which is already registered as MANAGED in the catalog"""
+      throw new TableAccessException(msg)
+    }
+
+    if (table.path != requestedPath) {
+      val msg =
+        s"""Requested external table $name from path: "$requestedPath".
+           |It is already registered in the catalog with a different path.
+           |Catalog path: "${table.path}"
+           |""".stripMargin
+      throw new TableAccessException(msg)
+    }
+
+    if (table.format != requestedFormat) {
+      val msg =
+        s"""Requested external table $name with format: "$requestedFormat".
+           |It is already registered in the catalog with format: "${table.format}"
+           |""".stripMargin
+      throw new TableAccessException(msg)
+    }
+  }
+
+  private def innerGetTable(name: String): Table = {
+    val tableMeta = spark.sql(s"DESCRIBE TABLE FORMATTED $name")
+
+    val requiredFields = "Location" :: "Provider" :: "Type" :: Nil
+
+    val fields = tableMeta
+      .filter(col("col_name").isInCollection(requiredFields))
+      .orderBy(col("col_name") asc)
+      .select("data_type")
+      .collect()
+
+    val path = fields(0).getString(0)
+    val format = Format.withName(fields(1).getString(0).toLowerCase)
+    val managed = fields(2).getString(0) == "MANAGED"
+
+    Table(db.name, name, path, format, managed)
   }
 
   private def parseTableName(name: String): (String, String) =
@@ -79,7 +147,7 @@ class Database(db: SparkDatabase, protected[database] val catalog: Catalog)(
            | Database used: ${db.name}
            | Table assumes: ${dbParts._1}""".stripMargin
       logger.error(errMsg)
-      throw new RuntimeException(errMsg)
+      throw new TableAccessException(errMsg)
     }
 
     dbParts

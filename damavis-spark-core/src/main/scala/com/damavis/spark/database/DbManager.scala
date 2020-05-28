@@ -4,6 +4,7 @@ import com.damavis.spark.database.exceptions.{
   DatabaseNotFoundException,
   InvalidDatabaseNameException
 }
+import com.damavis.spark.fs.HadoopFS
 import org.apache.spark.sql.SparkSession
 import org.slf4j.LoggerFactory
 
@@ -39,6 +40,6 @@ object DbManager {
 
     val db = catalog.getDatabase(name)
 
-    new Database(db, catalog)
+    new Database(db, HadoopFS(), catalog)
   }
 }
