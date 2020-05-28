@@ -46,7 +46,10 @@ class Database(
     Try {
       val actualName = parseAndCheckTableName(name)._2
 
-      innerGetTable(actualName)
+      if (catalog.tableExists(actualName))
+        innerGetTable(actualName)
+      else
+        DummyTable(db.name, name)
     }
   }
 
@@ -80,7 +83,7 @@ class Database(
                                   format: Format.Format): Table = {
     catalog.createTable(name, path, format.toString)
 
-    Table(db.name, name, path, format, false)
+    ConcreteTable(db.name, name, path, format, managed = false)
   }
 
   private def validateExternalTable(table: Table,
@@ -126,7 +129,7 @@ class Database(
     val format = Format.withName(fields(1).getString(0).toLowerCase)
     val managed = fields(2).getString(0) == "MANAGED"
 
-    Table(db.name, name, path, format, managed)
+    ConcreteTable(db.name, name, path, format, managed)
   }
 
   private def parseTableName(name: String): (String, String) =

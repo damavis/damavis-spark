@@ -31,8 +31,8 @@ class TableResourceWriter(spark: SparkSession,
 
     try {
       partitionWriter
-        .format(s"${table.options.format}")
-        .option("path", table.options.path)
+        .format(s"${table.format}")
+        .option("path", table.path)
         .mode(params.saveMode)
         .saveAsTable(table.name)
     } catch {
