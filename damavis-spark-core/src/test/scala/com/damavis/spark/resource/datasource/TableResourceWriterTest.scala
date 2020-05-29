@@ -3,7 +3,10 @@ package com.damavis.spark.resource.datasource
 import java.util.concurrent.atomic.AtomicInteger
 
 import com.damavis.spark.database.{Database, DbManager, Table}
-import com.damavis.spark.resource.datasource.enums.OverwritePartitionBehavior
+import com.damavis.spark.resource.datasource.enums.{
+  Format,
+  OverwritePartitionBehavior
+}
 import com.damavis.spark.utils.SparkTestSupport
 import org.apache.spark.sql.SaveMode
 import com.damavis.spark._
@@ -30,6 +33,47 @@ class TableResourceWriterTest extends SparkTestSupport {
   }
 
   "A TableResourceWriter" when {
+    "trying to write to a table that does not exist in catalog" should {
+      "table should be created automatically" in {
+        val table = nextTable
+        val tableName = table.name
+        val before = session.catalog.listTables().count
+
+        val personDf = dfFromAuthors(hemingway)
+        TableWriterBuilder(table)
+          .writer()
+          .write(personDf)
+
+        val after = session.catalog.listTables().count()
+
+        assert((before + 1) == after)
+
+        val realTable = db.getTable(tableName)
+        assert(realTable.get.managed)
+      }
+    }
+
+    "write successfully to an external table" in {
+      val personDf = dfFromAuthors(hemingway)
+      personDf.write.parquet(s"$root/person")
+
+      val tableName = s"authors${tableCount.addAndGet(1)}"
+      val table =
+        db.getExternalTable(tableName, s"$root/person", Format.Parquet).get
+
+      val before = session.catalog.listTables().count
+
+      TableWriterBuilder(table)
+        .writer()
+        .write(personDf)
+
+      val after = session.catalog.listTables().count
+      assert(before == after)
+
+      val written = session.read.table(tableName)
+      checkDataFramesEqual(written, personDf)
+    }
+
     "there is no partitioning" should {
       "write successfully to an empty table" in {
         val table = nextTable
@@ -156,10 +200,9 @@ class TableResourceWriterTest extends SparkTestSupport {
         writer.write(anotherUSAAuthor)
 
         val finalDf = session.read.table(table.name)
+        assert(finalDf.count() == 2)
 
         val expectedAuthors = dfFromAuthors(bradbury, wells)
-
-        assert(finalDf.count() == 2)
         checkDataFramesEqual(finalDf, expectedAuthors)
       }
 

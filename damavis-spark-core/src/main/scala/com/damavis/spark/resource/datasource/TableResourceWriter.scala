@@ -18,7 +18,8 @@ class TableResourceWriter(spark: SparkSession,
     val format = params.storageFormat
     val partitionedBy = params.partitionedBy.getOrElse(Nil)
 
-    actualTable = db.addTableIfNotExists(table, schema, format, partitionedBy)
+    actualTable =
+      db.addTableIfNotExists(actualTable, schema, format, partitionedBy)
   }
 
   override def write(data: DataFrame): Unit = {
@@ -38,17 +39,10 @@ class TableResourceWriter(spark: SparkSession,
 
     val writer = data.write
 
-    val partitionWriter = params.partitionedBy match {
-      case Some(columns) => writer.partitionBy(columns: _*)
-      case None          => writer
-    }
-
     try {
-      partitionWriter
-        .format(s"${actualTable.format}")
-        .option("path", actualTable.path)
+      data.write
         .mode(params.saveMode)
-        .saveAsTable(actualTable.name)
+        .insertInto(actualTable.name)
     } catch {
       case e: Throwable => throw e
     } finally {
