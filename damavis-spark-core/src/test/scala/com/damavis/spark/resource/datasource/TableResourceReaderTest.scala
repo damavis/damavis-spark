@@ -1,52 +1,60 @@
 package com.damavis.spark.resource.datasource
 
 import com.damavis.spark.database.{Database, DbManager}
-import com.damavis.spark.entities.Person
 import com.damavis.spark.resource.datasource.enums.Format
 import com.damavis.spark.utils.SparkTestSupport
-import org.apache.spark.sql.Row
+import com.damavis.spark._
+import com.damavis.spark.database.exceptions.TableAccessException
+import org.apache.spark.sql.SaveMode
 
 class TableResourceReaderTest extends SparkTestSupport {
-  import session.implicits._
-
   var db: Database = _
-
-  val tableName: String = "tableResourceTest"
 
   override def beforeAll(): Unit = {
     super.beforeAll()
 
     db = DbManager.useDatabase(name, forceCreation = true)
-
-    prepareDatabase()
-  }
-
-  private def prepareDatabase(): Unit = {
-    /*val personDf = (Person("Douglas Adams", 49, "UK") :: Nil).toDF()
-    val schema = personDf.schema
-
-    db.prepareTable(tableName, Format.Avro, schema)
-
-    personDf.write
-      .insertInto(tableName) */
   }
 
   "A TableResourceReader" should {
-    "retrieve table data" in {
-      val tryTable = db.getTable(tableName)
+    "read successfully an external table" in {
+      val authors = dfFromAuthors(hemingway, wells)
 
+      authors.write.parquet(s"$root/authors")
+
+      val tryTable =
+        db.getExternalTable("authors", s"$root/authors", Format.Parquet)
       assert(tryTable.isSuccess)
 
-      val table = tryTable.get
-      val reader = new TableReaderBuilder(table).reader()
-      val obtained = reader.read()
+      val readDf = TableReaderBuilder(tryTable.get).reader().read()
 
-      assert(obtained.count() == 1)
+      checkDataFramesEqual(readDf, authors)
+    }
 
-      val firstRow = obtained.collect().head
-      val expectedRow = Row("Douglas Adams", 49, "UK")
+    "read successfully a managed table registered in the catalog" in {
+      session.catalog.createTable("uk_authors",
+                                  "parquet",
+                                  authorsSchema,
+                                  Map[String, String]())
+      val authors = dfFromAuthors(dickens, wells)
 
-      assert(firstRow == expectedRow)
+      authors.write.mode(SaveMode.Overwrite).saveAsTable("uk_authors")
+
+      val tryTable = db.getTable("uk_authors")
+      assert(tryTable.isSuccess)
+
+      val obtained = TableReaderBuilder(tryTable.get).reader().read()
+
+      checkDataFramesEqual(obtained, authors)
+    }
+
+    "fail to read a table not yet present in the catalog" in {
+      val tryTable = db.getTable("usa_authors")
+      assert(tryTable.isSuccess)
+
+      intercept[TableAccessException] {
+        TableReaderBuilder(tryTable.get).reader().read()
+      }
     }
   }
 }

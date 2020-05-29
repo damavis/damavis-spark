@@ -2,6 +2,7 @@ package com.damavis.spark.utils
 
 import com.damavis.spark.SparkApp
 import com.holdenkarau.spark.testing.HDFSCluster
+import org.apache.spark.sql.Dataset
 import org.scalatest.{BeforeAndAfterAll, WordSpec}
 
 import scala.util.Try
@@ -45,17 +46,24 @@ class SparkTestSupport extends WordSpec with SparkApp with BeforeAndAfterAll {
   }
 
   def checkExceptionOfType[T <: Throwable](tryResult: Try[_],
+                                           exClass: Class[T],
                                            pattern: String): Unit = {
     assert(tryResult.isFailure)
 
     try {
       throw tryResult.failed.get
     } catch {
-      case ex: T =>
+      case ex: Throwable =>
+        assert(ex.getClass == exClass)
         assert(ex.getMessage.contains(pattern))
-      case _ =>
-        //Not expected exception type
-        assert(false)
     }
+  }
+
+  def checkDataFramesEqual[T](obtained: Dataset[T],
+                              expected: Dataset[T]): Unit = {
+    if (obtained.schema != expected.schema)
+      assert(false)
+
+    assert(obtained.except(expected).isEmpty)
   }
 }

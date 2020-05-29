@@ -24,7 +24,7 @@ class TableRWBuilder(table: Table, writeParams: TableWriterParameters)(
     db: Database)
     extends RWBuilder {
   override def build(): ResourceRW = {
-    val reader = new TableReaderBuilder(table).reader()
+    val reader = TableReaderBuilder(table).reader()
     val writer = new TableWriterBuilder(table, db, writeParams).writer()
 
     new BasicResourceRW(reader, writer)

@@ -1,12 +1,9 @@
 package com.damavis.spark.database
 
 import com.damavis.spark.database.exceptions.TableAccessException
-import com.damavis.spark.entities.Person
 import com.damavis.spark.resource.datasource.enums._
 import com.damavis.spark.utils.SparkTestSupport
 import org.apache.spark.sql.functions._
-
-import scala.util.Try
 
 class DatabaseTest extends SparkTestSupport {
 
@@ -48,7 +45,9 @@ class DatabaseTest extends SparkTestSupport {
     "fail to get an external table if there is no data" in {
       val tryTable =
         db.getExternalTable("numbers", s"$root/1234", Format.Parquet)
-      checkExceptionOfType[TableAccessException](tryTable, "Path not reachable")
+      checkExceptionOfType(tryTable,
+                           classOf[TableAccessException],
+                           "Path not reachable")
     }
 
     "fail to get an external table if validations do not succeed" in {
@@ -62,9 +61,9 @@ class DatabaseTest extends SparkTestSupport {
       val tryTable1 = db.getExternalTable("numbers1",
                                           s"$root/numbers_external",
                                           Format.Parquet)
-      checkExceptionOfType[TableAccessException](
-        tryTable1,
-        "already registered as MANAGED")
+      checkExceptionOfType(tryTable1,
+                           classOf[TableAccessException],
+                           "already registered as MANAGED")
 
       //Register an external table, and try to get it again but with wrong parameters
       numbersDf.write
@@ -77,15 +76,17 @@ class DatabaseTest extends SparkTestSupport {
       val tryTable2 = db.getExternalTable("numbers_wrong_path",
                                           s"$root/numbers_external",
                                           Format.Parquet)
-      checkExceptionOfType[TableAccessException](
+      checkExceptionOfType(
         tryTable2,
+        classOf[TableAccessException],
         "It is already registered in the catalog with a different path")
 
       val tryTable3 = db.getExternalTable("numbers_wrong_path",
                                           s"$root/numbers_external2",
                                           Format.Avro)
-      checkExceptionOfType[TableAccessException](
+      checkExceptionOfType(
         tryTable3,
+        classOf[TableAccessException],
         "It is already registered in the catalog with format")
     }
 
