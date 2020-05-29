@@ -124,29 +124,21 @@ class DatabaseTest extends SparkTestSupport {
     }
 
     "report whether a table exists or not" in {
-      assert(db.tableExists("persons"))
+      assert(db.tableExists("numbers"))
       assert(!db.tableExists("persons2"))
 
-      assert(db.tableExists("test.persons"))
+      assert(db.tableExists("test.numbers"))
       assert(!db.tableExists("another_test.persons"))
     }
 
-    "recover specified table along with its metadata" in {
-      val table = db.getTable("persons").get
-
-      // "path" field contains the whole path within the warehouse
-      // This value is non-deterministic: it changes each time the test is executed
-      // We will check that the table path within the database is as expected, since this is always the same
-      assert(table.path.endsWith("/test.db/persons"))
-
-      /*val cleared =
-        table.copy(options = table.options.copy(path = "/test.db/persons"))
-      val expected =
-        Table("test",
-              "persons",
-              TableOptions("/test.db/persons", Format.Parquet, managed = true))
-
-      assert(cleared == expected) */
+    "recover properly table metadata" in {
+      val obtained = db.getTable("numbers").get
+      val expected = RealTable("test",
+                               "numbers",
+                               s"$root/numbers_external",
+                               Format.Parquet,
+                               managed = false)
+      assert(obtained === expected)
     }
 
     "get table successfully if database is in table name" in {
@@ -157,8 +149,14 @@ class DatabaseTest extends SparkTestSupport {
       assert(db.getTable("another_test.persons").isFailure)
     }
 
-    "fail to get a table that does not exists" in {
-      assert(db.getTable("persons2").isFailure)
+    "return a DummyTable of a table that does not exists" in {
+      assert(!db.tableExists("persons2"))
+
+      val tryTable = db.getTable("persons2")
+      assert(tryTable.isSuccess)
+
+      val table = tryTable.get
+      assert(table.getClass === classOf[DummyTable])
     }
 
   }
