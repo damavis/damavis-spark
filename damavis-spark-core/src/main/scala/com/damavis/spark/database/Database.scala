@@ -204,26 +204,9 @@ class Database(
                                 format: Format.Format,
                                 schema: StructType,
                                 partitionBy: String*): Unit = {
-    //TODO: check if this is necessary
-    val serdeParams = format match {
-      case Format.Parquet =>
-        ("org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe",
-         "org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat",
-         "org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat")
-      case Format.Avro =>
-        ("org.apache.hadoop.hive.serde2.avro.AvroSerDe",
-         "org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat",
-         "org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat")
-    }
-
     val ddl = s"""CREATE TABLE IF NOT EXISTS $name
                  |(${schema.toDDL})
                  |USING ${format.toString.toUpperCase}
-                 |OPTIONS (
-                 |  SERDE '${serdeParams._1}',
-                 |  INPUTFORMAT '${serdeParams._2}',
-                 |  OUTPUTFORMAT '${serdeParams._3}'
-                 |)
                  |PARTITIONED BY (${partitionBy.mkString(",")})
                  |""".stripMargin
     spark.sql(ddl)
