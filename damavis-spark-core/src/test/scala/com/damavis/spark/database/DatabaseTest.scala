@@ -36,7 +36,8 @@ class DatabaseTest extends SparkTestSupport {
                                "numbers",
                                s"$root/numbers_external",
                                Format.Parquet,
-                               managed = false)
+                               managed = false,
+                               Nil)
       assert(table === expected)
 
       assert(db.catalog.listTables().count() == 1)
@@ -100,7 +101,8 @@ class DatabaseTest extends SparkTestSupport {
         "dummy_going_real",
         s"$root/sparktest-DatabaseTest-warehouse/test.db/dummy_going_real",
         Format.Parquet,
-        managed = true)
+        managed = true,
+        Nil)
 
       assert(obtained === expected)
 
@@ -138,7 +140,8 @@ class DatabaseTest extends SparkTestSupport {
                                "numbers",
                                s"$root/numbers_external",
                                Format.Parquet,
-                               managed = false)
+                               managed = false,
+                               Nil)
       assert(obtained === expected)
     }
 

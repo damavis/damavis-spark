@@ -4,7 +4,7 @@ import com.damavis.spark.database.exceptions._
 import com.damavis.spark.fs.FileSystem
 import com.damavis.spark.resource.datasource.enums.Format
 import com.damavis.spark.resource.datasource.enums.Format.Format
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.catalog.{Catalog, Database => SparkDatabase}
 import org.apache.spark.sql.types.StructType
@@ -78,7 +78,7 @@ class Database(
       } else {
         catalog.createTable(name, path, format.toString)
 
-        RealTable(db.name, name, path, format, managed = false)
+        RealTable(db.name, name, path, format, managed = false, Nil)
       }
     }
   }
@@ -111,11 +111,40 @@ class Database(
     }
   }
 
+  private def extractPartitions(tableMeta: DataFrame): Seq[PartitionColumn] = {
+    /*Note: there is a SQL statement "SHOW PARTITIONS", but it did not work with Hive
+     * We'll obtain them parsing manually the DESCRIBE table (aka tableMeta)
+     * When the table has partitions, the tableMeta dataframe is expected to have the following
+     * format in the "col_name" column:
+     * col1, ..., colN, "# Partition Information", "# col_name", partitionCol1, ..., partitionColN, <blank>
+     * Partition columns are also included in the normal columns list
+     */
+
+    val metaContent = tableMeta.collect()
+    val partitionInd = metaContent.indexWhere(
+      _.getString(0).startsWith("# Partition Information"))
+
+    if (partitionInd <= 0)
+      return Nil
+
+    val partitionEnd =
+      metaContent.indexWhere(_.getString(0) == "", partitionInd + 2)
+    if (partitionEnd < partitionInd + 2)
+      return Nil
+
+    metaContent
+      .slice(partitionInd + 2, partitionEnd)
+      .map(
+        row =>
+          PartitionColumn(row.getString(0),
+                          row.getString(1),
+                          row.getString(2) == "null"))
+  }
+
   private def innerGetTable(name: String): Table = {
     val tableMeta = spark.sql(s"DESCRIBE TABLE FORMATTED $name")
 
     val requiredFields = "Location" :: "Provider" :: "Type" :: Nil
-
     val fields = tableMeta
       .filter(col("col_name").isInCollection(requiredFields))
       .orderBy(col("col_name") asc)
@@ -126,7 +155,9 @@ class Database(
     val format = Format.withName(fields(1).getString(0).toLowerCase)
     val managed = fields(2).getString(0) == "MANAGED"
 
-    RealTable(db.name, name, path, format, managed)
+    val partitionInfo = extractPartitions(tableMeta)
+
+    RealTable(db.name, name, path, format, managed, partitionInfo)
   }
 
   private def parseTableName(name: String): (String, String) =

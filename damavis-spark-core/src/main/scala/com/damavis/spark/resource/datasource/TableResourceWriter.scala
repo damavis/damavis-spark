@@ -15,6 +15,9 @@ class TableResourceWriter(spark: SparkSession,
 
   private def updateCatalogBeforeWrite(data: DataFrame): Unit = {
     val schema = data.schema
+
+    //TODO if table is real, and parameters have changed from its creation, what will happen?
+    //     Should this crazy non-sense be allowed? Even just as a thought? Will the world be set to burn?
     val format = params.storageFormat
     val partitionedBy = params.partitionedBy.getOrElse(Nil)
 
@@ -37,8 +40,8 @@ class TableResourceWriter(spark: SparkSession,
       spark.conf.set("spark.sql.sources.partitionOverwriteMode", overwriteMode)
     }
 
-    val writer = data.write
-
+    //TODO since insertInto uses positional columns, would be nice to check that the passed dataframe matches
+    //     the one used when the schema was defined
     try {
       data.write
         .mode(params.saveMode)
