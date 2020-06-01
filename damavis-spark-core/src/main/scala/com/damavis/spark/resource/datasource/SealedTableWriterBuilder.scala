@@ -1,6 +1,6 @@
 package com.damavis.spark.resource.datasource
 
-import com.damavis.spark.database.exceptions.TableAccessException
+import com.damavis.spark.database.exceptions.TableDefinitionException
 import com.damavis.spark.database.{Database, Table}
 import com.damavis.spark.resource.datasource.enums.Format.Format
 import org.apache.spark.sql.SparkSession
@@ -17,7 +17,7 @@ class SealedTableWriterBuilder(
            |Previous format was: ${table.format}
            |Request format is: $format
            |""".stripMargin
-      throw new TableAccessException(msg)
+      throw new TableDefinitionException(table.name, msg)
     }
 
     super.withFormat(format)
@@ -27,7 +27,7 @@ class SealedTableWriterBuilder(
     if (!table.isPartitioned) {
       val msg =
         s"""Table ${table.name} is already defined with no partitioning"""
-      throw new TableAccessException(msg)
+      throw new TableDefinitionException(table.name, msg)
     }
 
     val partitionColumnNames = table.partitions.map(_.name)
@@ -37,7 +37,7 @@ class SealedTableWriterBuilder(
            |Partitioning on schema: ${partitionColumnNames.mkString(",")}
            |Requested partitioning: ${columns.mkString(",")}
            |""".stripMargin
-      throw new TableAccessException(msg)
+      throw new TableDefinitionException(table.name, msg)
     }
 
     super.partitionedBy(columns: _*)

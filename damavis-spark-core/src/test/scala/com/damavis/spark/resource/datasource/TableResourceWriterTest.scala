@@ -1,8 +1,6 @@
 package com.damavis.spark.resource.datasource
 
-import java.util.concurrent.atomic.AtomicInteger
-
-import com.damavis.spark.database.{Database, DbManager, Table}
+import com.damavis.spark.database.{Database, DbManager}
 import com.damavis.spark.resource.datasource.enums.{
   Format,
   OverwritePartitionBehavior
@@ -14,7 +12,6 @@ import com.damavis.spark._
 class TableResourceWriterTest extends SparkTestSupport {
 
   implicit var db: Database = _
-  val tableCount = new AtomicInteger(0)
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -22,20 +19,10 @@ class TableResourceWriterTest extends SparkTestSupport {
     db = DbManager.useDatabase(name, forceCreation = true)
   }
 
-  private def nextTable: Table = {
-    val tableName = s"authors${tableCount.addAndGet(1)}"
-
-    val tryTable = db.getTable(tableName)
-
-    assert(tryTable.isSuccess)
-
-    tryTable.get
-  }
-
   "A TableResourceWriter" when {
     "trying to write to a table that does not exist in catalog" should {
       "table should be created automatically" in {
-        val table = nextTable
+        val table = nextTable()
         val tableName = table.name
         val before = session.catalog.listTables().count
 
@@ -57,7 +44,7 @@ class TableResourceWriterTest extends SparkTestSupport {
       val personDf = dfFromAuthors(hemingway)
       personDf.write.parquet(s"$root/person")
 
-      val tableName = s"authors${tableCount.addAndGet(1)}"
+      val tableName = "myAuthorsTable"
       val table =
         db.getExternalTable(tableName, s"$root/person", Format.Parquet).get
 
@@ -76,7 +63,7 @@ class TableResourceWriterTest extends SparkTestSupport {
 
     "there is no partitioning" should {
       "write successfully to an empty table" in {
-        val table = nextTable
+        val table = nextTable()
         val writer = TableWriterBuilder(table).writer()
 
         val personDf = dfFromAuthors(hemingway)
@@ -89,7 +76,7 @@ class TableResourceWriterTest extends SparkTestSupport {
       }
 
       "apply properly append save mode" in {
-        val table = nextTable
+        val table = nextTable()
         val writerBuilder = TableWriterBuilder(table)
 
         val author1 = dfFromAuthors(hemingway)
@@ -111,7 +98,7 @@ class TableResourceWriterTest extends SparkTestSupport {
       }
 
       "apply properly overwrite save mode" in {
-        val table = nextTable
+        val table = nextTable()
         val writerBuilder = TableWriterBuilder(table)
 
         val author1 = dfFromAuthors(hemingway)
@@ -134,7 +121,7 @@ class TableResourceWriterTest extends SparkTestSupport {
 
     "there is partitioning" should {
       "write successfully to an empty table" in {
-        val table = nextTable
+        val table = nextTable()
         val writer = TableWriterBuilder(table)
           .partitionedBy("nationality")
           .writer()
@@ -149,7 +136,7 @@ class TableResourceWriterTest extends SparkTestSupport {
       }
 
       "overwrite all partitions by default" in {
-        val table = nextTable
+        val table = nextTable()
         val writer = TableWriterBuilder(table)
           .partitionedBy("nationality")
           .writer()
@@ -167,7 +154,7 @@ class TableResourceWriterTest extends SparkTestSupport {
       }
 
       "overwrite all partitions if told so" in {
-        val table = nextTable
+        val table = nextTable()
         val writer = TableWriterBuilder(table)
           .partitionedBy("nationality")
           .overwritePartitionBehavior(OverwritePartitionBehavior.OVERWRITE_ALL)
@@ -186,7 +173,7 @@ class TableResourceWriterTest extends SparkTestSupport {
       }
 
       "overwrite only matching partitions if parameter is set" in {
-        val table = nextTable
+        val table = nextTable()
         val writer = TableWriterBuilder(table)
           .partitionedBy("nationality")
           .overwritePartitionBehavior(
@@ -207,7 +194,7 @@ class TableResourceWriterTest extends SparkTestSupport {
       }
 
       "do not overwrite anything if save mode is different than overwrite" in {
-        val table = nextTable
+        val table = nextTable()
         val writer = TableWriterBuilder(table)
           .partitionedBy("nationality")
           .saveMode(SaveMode.Append)
