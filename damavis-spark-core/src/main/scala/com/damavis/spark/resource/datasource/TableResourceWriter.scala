@@ -1,5 +1,9 @@
 package com.damavis.spark.resource.datasource
 
+import com.damavis.spark.database.exceptions.{
+  TableAccessException,
+  TableDefinitionException
+}
 import com.damavis.spark.database.{Database, Table}
 import com.damavis.spark.resource.ResourceWriter
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
@@ -37,9 +41,9 @@ class TableResourceWriter(spark: SparkSession,
       spark.conf.set("spark.sql.sources.partitionOverwriteMode", overwriteMode)
     }
 
-    //TODO since insertInto uses positional columns, would be nice to check that the passed dataframe matches
-    //     the one used when the schema was defined
     try {
+      checkDataFrameColumns(data)
+
       data.write
         .mode(params.saveMode)
         .insertInto(actualTable.name)
@@ -51,4 +55,23 @@ class TableResourceWriter(spark: SparkSession,
     }
 
   }
+
+  private def checkDataFrameColumns(data: DataFrame): Unit = {
+    // This is step is mandatory since we use insertInto(), which does not respect the table's schema
+    // Instead, it uses the columns' positions. So we have to check that the columns are in the proper order
+    // defined by the schema
+
+    val columnsDoNotMatch = actualTable.columns
+      .zip(data.schema)
+      .exists(p => p._1.name != p._2.name)
+
+    if (columnsDoNotMatch) {
+      val msg =
+        s"""DataFrame to be written on ${actualTable.name} does not have columns in required order
+           |Column order is: ${actualTable.columns}
+           |""".stripMargin
+      throw new TableAccessException(msg)
+    }
+  }
+
 }

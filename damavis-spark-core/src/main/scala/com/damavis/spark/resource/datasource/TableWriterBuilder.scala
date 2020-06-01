@@ -81,7 +81,7 @@ class SealedTableWriterBuilder(
       throw new TableDefinitionException(table.name, msg)
     }
 
-    val partitionColumnNames = table.partitions.map(_.name)
+    val partitionColumnNames = table.columns.filter(_.partitioned).map(_.name)
     if (partitionColumnNames != columns) {
       val msg =
         s"""Table ${table.name} is already defined with different partitioning columns

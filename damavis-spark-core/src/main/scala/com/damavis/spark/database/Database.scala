@@ -125,20 +125,23 @@ class Database(
     val format = Format.withName(fields(1).getString(0).toLowerCase)
     val managed = fields(2).getString(0) == "MANAGED"
 
-    val partitionInfo = extractPartitions(name)
+    val columns = extractColumns(name)
 
-    RealTable(db.name, name, path, format, managed, partitionInfo)
+    RealTable(db.name, name, path, format, managed, columns)
   }
 
-  private def extractPartitions(name: String): Seq[PartitionColumn] = {
-    val partitionColumnsDf = catalog
+  private def extractColumns(name: String): Seq[Column] = {
+    val columnsDf = catalog
       .listColumns(name)
-      .filter(col("isPartition") === lit(true))
-      .select("name", "dataType", "nullable")
+      .select("name", "dataType", "isPartition", "nullable")
       .collect()
 
-    partitionColumnsDf.map(row =>
-      PartitionColumn(row.getString(0), row.getString(1), row.getBoolean(2)))
+    columnsDf.map(
+      row =>
+        Column(row.getString(0),
+               row.getString(1),
+               row.getBoolean(2),
+               row.getBoolean(3)))
   }
 
   private def parseTableName(name: String): (String, String) =

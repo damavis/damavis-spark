@@ -102,7 +102,8 @@ class DatabaseTest extends SparkTestSupport {
         s"$root/sparktest-DatabaseTest-warehouse/test.db/dummy_going_real",
         Format.Parquet,
         managed = true,
-        Nil)
+        Column("number", "int", partitioned = false, nullable = true) :: Nil
+      )
 
       assert(obtained === expected)
 
@@ -136,12 +137,13 @@ class DatabaseTest extends SparkTestSupport {
 
     "recover properly table metadata" in {
       val obtained = db.getTable("numbers").get
-      val expected = RealTable("test",
-                               "numbers",
-                               s"$root/numbers_external",
-                               Format.Parquet,
-                               managed = false,
-                               Nil)
+      val expected = RealTable(
+        "test",
+        "numbers",
+        s"$root/numbers_external",
+        Format.Parquet,
+        managed = false,
+        Column("number", "int", partitioned = false, nullable = true) :: Nil)
       assert(obtained === expected)
     }
 

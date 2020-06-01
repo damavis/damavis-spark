@@ -2,7 +2,10 @@ package com.damavis.spark.database
 
 import com.damavis.spark.resource.datasource.enums.Format.Format
 
-case class PartitionColumn(name: String, dataType: String, nullable: Boolean)
+case class Column(name: String,
+                  dataType: String,
+                  partitioned: Boolean,
+                  nullable: Boolean)
 
 sealed trait Table {
   def database: String
@@ -10,9 +13,9 @@ sealed trait Table {
   def path: String
   def format: Format
   def managed: Boolean
-  def partitions: Seq[PartitionColumn]
+  def columns: Seq[Column]
 
-  def isPartitioned: Boolean = partitions.nonEmpty
+  def isPartitioned: Boolean = columns.indexWhere(_.partitioned) >= 0
 }
 
 case class RealTable(database: String,
@@ -20,12 +23,12 @@ case class RealTable(database: String,
                      path: String,
                      format: Format,
                      managed: Boolean,
-                     partitions: Seq[PartitionColumn])
+                     columns: Seq[Column])
     extends Table
 
 case class DummyTable(database: String, name: String) extends Table {
   override def path: String = ???
   override def format: Format = ???
   override def managed: Boolean = ???
-  override def partitions: Seq[PartitionColumn] = ???
+  override def columns: Seq[Column] = ???
 }
