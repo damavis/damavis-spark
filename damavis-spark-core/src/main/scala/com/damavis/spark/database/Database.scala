@@ -111,36 +111,6 @@ class Database(
     }
   }
 
-  private def extractPartitions(tableMeta: DataFrame): Seq[PartitionColumn] = {
-    /*Note: there is a SQL statement "SHOW PARTITIONS", but it did not work with Hive
-     * We'll obtain them parsing manually the DESCRIBE table (aka tableMeta)
-     * When the table has partitions, the tableMeta dataframe is expected to have the following
-     * format in the "col_name" column:
-     * col1, ..., colN, "# Partition Information", "# col_name", partitionCol1, ..., partitionColN, <blank>
-     * Partition columns are also included in the normal columns list
-     */
-
-    val metaContent = tableMeta.collect()
-    val partitionInd = metaContent.indexWhere(
-      _.getString(0).startsWith("# Partition Information"))
-
-    if (partitionInd <= 0)
-      return Nil
-
-    val partitionEnd =
-      metaContent.indexWhere(_.getString(0) == "", partitionInd + 2)
-    if (partitionEnd < partitionInd + 2)
-      return Nil
-
-    metaContent
-      .slice(partitionInd + 2, partitionEnd)
-      .map(
-        row =>
-          PartitionColumn(row.getString(0),
-                          row.getString(1),
-                          row.getString(2) == "null"))
-  }
-
   private def innerGetTable(name: String): Table = {
     val tableMeta = spark.sql(s"DESCRIBE TABLE FORMATTED $name")
 
@@ -155,9 +125,20 @@ class Database(
     val format = Format.withName(fields(1).getString(0).toLowerCase)
     val managed = fields(2).getString(0) == "MANAGED"
 
-    val partitionInfo = extractPartitions(tableMeta)
+    val partitionInfo = extractPartitions(name)
 
     RealTable(db.name, name, path, format, managed, partitionInfo)
+  }
+
+  private def extractPartitions(name: String): Seq[PartitionColumn] = {
+    val partitionColumnsDf = catalog
+      .listColumns(name)
+      .filter(col("isPartition") === lit(true))
+      .select("name", "dataType", "nullable")
+      .collect()
+
+    partitionColumnsDf.map(row =>
+      PartitionColumn(row.getString(0), row.getString(1), row.getBoolean(2)))
   }
 
   private def parseTableName(name: String): (String, String) =
