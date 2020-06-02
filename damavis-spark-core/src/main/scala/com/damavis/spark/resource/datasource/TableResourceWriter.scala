@@ -57,7 +57,7 @@ class TableResourceWriter(spark: SparkSession,
   }
 
   private def checkDataFrameColumns(data: DataFrame): Unit = {
-    // This is step is mandatory since we use insertInto(), which does not respect the table's schema
+    // This step is mandatory since we use insertInto(), which does not respect the table's schema
     // Instead, it uses the columns' positions. So we have to check that the columns are in the proper order
     // defined by the schema
 

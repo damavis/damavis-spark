@@ -6,8 +6,12 @@ import com.damavis.spark.resource.datasource.enums.{
   OverwritePartitionBehavior
 }
 import com.damavis.spark.utils.SparkTestSupport
-import org.apache.spark.sql.SaveMode
+import org.apache.spark.sql.{Row, SaveMode}
 import com.damavis.spark._
+import com.damavis.spark.database.exceptions.TableAccessException
+import org.apache.spark.sql.types._
+
+import scala.collection.JavaConverters._
 
 class TableResourceWriterTest extends SparkTestSupport {
 
@@ -212,6 +216,37 @@ class TableResourceWriterTest extends SparkTestSupport {
 
         assert(finalDf.count() == 3)
         checkDataFramesEqual(finalDf, expectedAuthors)
+      }
+    }
+
+    "trying to write a DataFrame" should {
+      "do not allow write if DataFrame schema does not match table's one" in {
+        val table = nextTable()
+        val writer = TableWriterBuilder(table)
+          .partitionedBy("nationality")
+          .writer()
+
+        val authors = dfFromAuthors(hemingway, wells)
+        writer.write(authors)
+
+        val anotherSchema = StructType(
+          StructField("name", StringType, nullable = true) ::
+            StructField("nationality", StringType, nullable = true) ::
+            StructField("deceaseAge", IntegerType, nullable = true) ::
+            Nil
+        )
+
+        val dickensList = (Row(dickens.name,
+                               dickens.nationality,
+                               dickens.deceaseAge) :: Nil).asJava
+        val newDf = session.createDataFrame(dickensList, anotherSchema)
+
+        val ex = intercept[TableAccessException] {
+          writer.write(newDf)
+        }
+
+        assert(
+          ex.getMessage.contains("does not have columns in required order"))
       }
     }
   }
