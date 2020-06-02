@@ -1,8 +1,10 @@
 val sparkVersion = "2.4.5"
 
 val dependencies = Seq(
-  "org.apache.spark" %% "spark-core" % sparkVersion,
-  "org.apache.spark" %% "spark-sql" % sparkVersion,
+  "org.apache.spark" %% "spark-core" % sparkVersion % "provided",
+  "org.apache.spark" %% "spark-sql" % sparkVersion % "provided",
+  "org.apache.spark" %% "spark-hive" % sparkVersion % "provided",
+  "org.apache.spark" %% "spark-avro" % sparkVersion % "provided",
   "com.typesafe" % "config" % "1.3.2"
 )
 
@@ -22,7 +24,8 @@ val settings = Seq(
   parallelExecution in Test := false,
   envVars in Test := Map(
     "MASTER" -> "local[*]"
-  )
+  ),
+  test in assembly := {}
 )
 
 lazy val root = (project in file("."))

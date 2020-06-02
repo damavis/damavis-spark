@@ -1,15 +1,17 @@
 package com.damavis.spark.fs
 
+import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.spark.sql.SparkSession
 
 object HadoopFS {
-  def apply(implicit spark: SparkSession): HadoopFS = new HadoopFS()
+  def apply()(implicit spark: SparkSession): HadoopFS = new HadoopFS()
 }
 
 class HadoopFS()(implicit spark: SparkSession) extends FileSystem {
-  //Spark does not guarantee that member sessionState will be maintained across versions
-  private val hadoopConf = spark.sessionState.newHadoopConf()
+
+  protected val hadoopConf: Configuration =
+    spark.sparkContext.hadoopConfiguration
 
   override def pathExists(path: String): Boolean = {
     val hdfsPath = new Path(path)

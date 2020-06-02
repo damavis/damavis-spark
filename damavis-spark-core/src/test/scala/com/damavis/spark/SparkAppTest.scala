@@ -8,7 +8,7 @@ class SparkAppTest extends FlatSpec with Matchers with SparkApp {
 
   "An SparkApp" should
     "run successfully" in {
-    import spark.implicits._
+    import session.implicits._
     val df = spark.sparkContext.parallelize(List(1, 2, 3)).toDF("number")
     assert(df.count() === 3)
     spark.stop()

@@ -3,7 +3,7 @@ package com.damavis.spark.database
 import com.damavis.spark.resource.datasource.Format
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.catalog.{Catalog, Database}
+import org.apache.spark.sql.catalog.{Catalog, Database => SparkDatabase}
 import org.slf4j.LoggerFactory
 
 import scala.util.Try
@@ -32,7 +32,8 @@ object Schema {
   }
 }
 
-class Schema(db: Database, catalog: Catalog)(implicit spark: SparkSession) {
+class Schema(db: SparkDatabase, catalog: Catalog)(
+    implicit spark: SparkSession) {
 
   private lazy val logger = LoggerFactory.getLogger(classOf[Schema])
 
