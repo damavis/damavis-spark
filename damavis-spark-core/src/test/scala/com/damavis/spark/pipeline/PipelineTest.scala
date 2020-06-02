@@ -6,7 +6,7 @@ import com.damavis.spark.resource.datasource.{
   TableReaderBuilder,
   TableWriterBuilder
 }
-import com.damavis.spark.resource.datasource.enums.Format
+import com.damavis.spark.resource.datasource.Format
 import com.damavis.spark.utils.SparkTestSupport
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SaveMode}

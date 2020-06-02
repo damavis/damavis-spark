@@ -2,8 +2,8 @@ package com.damavis.spark.database
 
 import com.damavis.spark.database.exceptions._
 import com.damavis.spark.fs.FileSystem
-import com.damavis.spark.resource.datasource.enums.Format
-import com.damavis.spark.resource.datasource.enums.Format.Format
+import com.damavis.spark.resource.datasource.Format
+import com.damavis.spark.resource.datasource.Format.Format
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.catalog.{Catalog, Database => SparkDatabase}

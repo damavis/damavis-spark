@@ -1,6 +1,6 @@
 package com.damavis.spark.database
 
-import com.damavis.spark.resource.datasource.enums.Format.Format
+import com.damavis.spark.resource.datasource.Format.Format
 
 case class Column(name: String,
                   dataType: String,

@@ -1,7 +1,6 @@
 package com.damavis.spark.resource.datasource
 
 import com.damavis.spark.database.{Database, DbManager}
-import com.damavis.spark.resource.datasource.enums.Format
 import com.damavis.spark.utils.SparkTestSupport
 import com.damavis.spark._
 import com.damavis.spark.database.exceptions.TableAccessException

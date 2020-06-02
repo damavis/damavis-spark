@@ -1,7 +1,7 @@
 package com.damavis.spark.database
 
 import com.damavis.spark.database.exceptions.TableAccessException
-import com.damavis.spark.resource.datasource.enums._
+import com.damavis.spark.resource.datasource._
 import com.damavis.spark.utils.SparkTestSupport
 import org.apache.spark.sql.functions._
 
