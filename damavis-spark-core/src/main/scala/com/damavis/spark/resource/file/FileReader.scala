@@ -15,13 +15,15 @@ class FileReader(params: FileReaderParameters) extends ResourceReader {
       val from = params.from.get
       val to = params.to.get
 
-      val sparkReader = spark.read
+      spark.read
         .option("basePath", path)
-        .format("parquet")
+        .format(params.format.toString)
+        .load(DatePaths.generate(path, from, to): _*)
 
-      sparkReader.load(DatePaths.generate(path, from, to): _*)
     } else {
-      spark.read.parquet(path)
+      spark.read
+        .format(params.format.toString)
+        .load(path)
     }
   }
 }
