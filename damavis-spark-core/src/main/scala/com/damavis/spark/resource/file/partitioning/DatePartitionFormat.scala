@@ -1,18 +1,13 @@
-package com.damavis.spark.resource.file
+package com.damavis.spark.resource.file.partitioning
+
 import java.time.LocalDateTime
 
-import com.damavis.spark.fs.{FileSystem, HadoopFS}
-import org.apache.spark.sql.SparkSession
+import com.damavis.spark.fs.FileSystem
 
-object DateSplitPartitioning {
-  def apply()(implicit spark: SparkSession): DateSplitPartitioning = {
-    new DateSplitPartitioning(HadoopFS())
-  }
-}
+abstract class DatePartitionFormat(fs: FileSystem) {
+  def dateToPath(date: LocalDateTime): String
 
-class DateSplitPartitioning(fs: FileSystem) extends DatePartitionFormat {
-  override def generatePaths(from: LocalDateTime,
-                             to: LocalDateTime): Seq[String] = {
+  def generatePaths(from: LocalDateTime, to: LocalDateTime): Seq[String] = {
     datesGen(from, to)
       .map(dateToPath)
       .par
@@ -35,9 +30,5 @@ class DateSplitPartitioning(fs: FileSystem) extends DatePartitionFormat {
       else datesGen(acc :+ pointer, pointer.plusDays(1), end)
     }
     datesGen(List(), from, to)
-  }
-
-  private def dateToPath(date: LocalDateTime): String = {
-    s"year=${date.getYear}/month=${date.getMonthValue}/day=${date.getDayOfMonth}"
   }
 }
