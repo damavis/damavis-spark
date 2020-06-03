@@ -32,9 +32,9 @@ class PipelineTest extends SparkTestSupport {
       val nationalitiesTable = db.getTable("nationalities").get
 
       val inTable =
-        db.getExternalTable("external_authors_table",
-                            s"$root/external-authors",
-                            Format.Parquet)
+        db.getUnmanagedTable("external_authors_table",
+                             s"$root/external-authors",
+                             Format.Parquet)
           .get
 
       val extractNationality = new PipelineStage {

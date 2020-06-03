@@ -56,9 +56,9 @@ class Database(
     }
   }
 
-  def getExternalTable(name: String,
-                       path: String,
-                       format: Format.Format): Try[Table] = {
+  def getUnmanagedTable(name: String,
+                        path: String,
+                        format: Format.Format): Try[Table] = {
     Try {
       val dbPath = parseAndCheckTableName(name)
       val actualName = dbPath._2

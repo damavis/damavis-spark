@@ -50,7 +50,7 @@ class TableResourceWriterTest extends SparkTestSupport {
 
       val tableName = "myAuthorsTable"
       val table =
-        db.getExternalTable(tableName, s"$root/person", Format.Parquet).get
+        db.getUnmanagedTable(tableName, s"$root/person", Format.Parquet).get
 
       val before = session.catalog.listTables().count
 
