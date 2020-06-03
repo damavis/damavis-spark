@@ -9,15 +9,18 @@ import org.apache.spark.sql.SparkSession
 object FileReaderBuilder {
   def apply(format: Format, path: String)(
       implicit spark: SparkSession): FileReaderBuilder = {
-    val params = FileReaderParameters(format, path, spark)
+    val params = FileReaderParameters(format, path)
     new FileReaderBuilder(params)
   }
 
-  def apply(params: FileReaderParameters): FileReaderBuilder =
+  def apply(params: FileReaderParameters)(
+      implicit spark: SparkSession): FileReaderBuilder =
     new FileReaderBuilder(params)
 }
 
-class FileReaderBuilder(params: FileReaderParameters) extends ReaderBuilder {
+class FileReaderBuilder(params: FileReaderParameters)(
+    implicit spark: SparkSession)
+    extends ReaderBuilder {
 
   override def reader(): ResourceReader = {
     if (params.datePartitioned)
@@ -28,11 +31,7 @@ class FileReaderBuilder(params: FileReaderParameters) extends ReaderBuilder {
 
   def betweenDates(from: LocalDate, to: LocalDate): FileReaderBuilder = {
     val time = LocalTime.of(0, 0, 0)
-    val newParams =
-      params.copy(from = Some(LocalDateTime.of(from, time)),
-                  to = Some(LocalDateTime.of(to, time)))
-
-    new FileReaderBuilder(newParams)
+    betweenDates(LocalDateTime.of(from, time), LocalDateTime.of(to, time))
   }
 
   def betweenDates(from: LocalDateTime,

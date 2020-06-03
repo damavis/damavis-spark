@@ -4,11 +4,17 @@ import java.time.LocalDateTime
 import com.damavis.spark.resource.Format.Format
 import org.apache.spark.sql.SparkSession
 
+private[resource] object FileReaderParameters {
+  def apply(format: Format, path: String)(
+      implicit spark: SparkSession): FileReaderParameters = {
+    FileReaderParameters(format, path, DateSplitPartitioning())
+  }
+}
+
 private[resource] case class FileReaderParameters(
     format: Format,
     path: String,
-    sparkSession: SparkSession,
-    partitioningFormat: DatePartitionFormat = new DateSplitPartitioning,
+    partitioningFormat: DatePartitionFormat,
     from: Option[LocalDateTime] = None,
     to: Option[LocalDateTime] = None) {
 

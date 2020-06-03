@@ -1,14 +1,11 @@
 package com.damavis.spark.resource.file
 
-import com.damavis.spark.fs.{FileSystem, HadoopFS}
 import com.damavis.spark.resource.{DatePaths, ResourceReader}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
-class FileReader(params: FileReaderParameters) extends ResourceReader {
-  private implicit val fs: FileSystem = HadoopFS()(params.sparkSession)
-
+class FileReader(params: FileReaderParameters)(implicit spark: SparkSession)
+    extends ResourceReader {
   override def read(): DataFrame = {
-    implicit val spark: SparkSession = params.sparkSession
     val path = params.path
 
     if (params.datePartitioned) {
