@@ -5,9 +5,11 @@ import java.time.LocalDateTime
 trait PartitionDateFormatter {
   def dateToPath(date: LocalDateTime): String
 
-  protected def isoHour(date: LocalDateTime): String =
-    if (date.getHour >= 10)
-      s"${date.getHour}"
+  def columnNames: Seq[String]
+
+  protected def twoDigits(value: Int): String =
+    if (value >= 10)
+      s"$value"
     else
-      s"0${date.getHour}"
+      s"0$value"
 }

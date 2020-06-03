@@ -43,7 +43,7 @@ class FileReaderBuilder(params: FileReaderParameters)(
     new FileReaderBuilder(newParams)
   }
 
-  def usingPathGenerator(format: PartitionDateFormatter): FileReaderBuilder = {
+  def partitionDateFormat(format: PartitionDateFormatter): FileReaderBuilder = {
     val newParams = params.copy(partitioningFormat = format)
 
     new FileReaderBuilder(newParams)

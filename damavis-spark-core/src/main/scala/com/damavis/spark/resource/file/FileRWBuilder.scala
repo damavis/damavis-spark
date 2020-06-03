@@ -3,6 +3,7 @@ package com.damavis.spark.resource.file
 import java.time.{LocalDate, LocalDateTime, LocalTime}
 
 import com.damavis.spark.resource.Format.Format
+import com.damavis.spark.resource.file.partitioning.PartitionDateFormatter
 import com.damavis.spark.resource.{BasicResourceRW, RWBuilder, ResourceRW}
 import org.apache.spark.sql.SparkSession
 
@@ -36,9 +37,19 @@ class FileRWBuilder(
     val newReadParams =
       readParams.copy(from = Some(from), to = Some(to))
 
-    //TODO: MAKE THIS PARAMETERIZABLE!!!!!
     val newWriteParams =
-      writeParams.copy(columnNames = "year" :: "month" :: "day" :: Nil)
+      writeParams.copy(
+        columnNames = newReadParams.partitioningFormat.columnNames)
+
+    new FileRWBuilder(newReadParams, newWriteParams)
+  }
+
+  def partitionDateFormat(format: PartitionDateFormatter): FileRWBuilder = {
+    val newReadParams = readParams.copy(partitioningFormat = format)
+
+    val newWriteParams =
+      writeParams.copy(
+        columnNames = newReadParams.partitioningFormat.columnNames)
 
     new FileRWBuilder(newReadParams, newWriteParams)
   }

@@ -8,8 +8,18 @@ class FullDate(includeHour: Boolean = false) extends PartitionDateFormatter {
     val begin = s"dt=${date.format(DateTimeFormatter.ISO_LOCAL_DATE)}"
 
     if (includeHour) {
-      s"$begin/h=${isoHour(date)}"
+      s"$begin/h=${twoDigits(date.getHour)}"
     } else
       begin
+  }
+
+  override def columnNames: Seq[String] = {
+    val dateCols = "dt" :: Nil
+    val hourCol =
+      if (includeHour)
+        "h" :: Nil
+      else Nil
+
+    dateCols ++ hourCol
   }
 }
