@@ -1,6 +1,6 @@
 package com.damavis.spark.resource.file
 
-import java.time.LocalDate
+import java.time.{LocalDate, LocalDateTime, LocalTime}
 
 import com.damavis.spark.resource.Format.Format
 import com.damavis.spark.resource.{ReaderBuilder, ResourceReader}
@@ -27,21 +27,30 @@ class FileReaderBuilder(params: FileReaderParameters) extends ReaderBuilder {
   }
 
   def betweenDates(from: LocalDate, to: LocalDate): FileReaderBuilder = {
+    val time = LocalTime.of(0, 0, 0)
     val newParams =
-      params.copy(datePartitioned = true, from = Some(from), to = Some(to))
+      params.copy(from = Some(LocalDateTime.of(from, time)),
+                  to = Some(LocalDateTime.of(to, time)))
+
+    new FileReaderBuilder(newParams)
+  }
+
+  def betweenDates(from: LocalDateTime,
+                   to: LocalDateTime): FileReaderBuilder = {
+    val newParams =
+      params.copy(from = Some(from), to = Some(to))
+
+    new FileReaderBuilder(newParams)
+  }
+
+  def usingPartitioningFormat(
+      format: DatePartitionFormat): FileReaderBuilder = {
+    val newParams = params.copy(partitioningFormat = format)
 
     new FileReaderBuilder(newParams)
   }
 
   private def checkProperDates(): Unit = {
-    if (!(params.from.isDefined && params.to.isDefined)) {
-      val errMsg =
-        s"""Invalid parameters defined for reading spark object with path: ${params.path}.
-           |Missing either "from" or "to" date (or both)
-           |""".stripMargin
-      throw new RuntimeException(errMsg)
-    }
-
     val from = params.from.get
     val to = params.to.get
 

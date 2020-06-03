@@ -1,6 +1,6 @@
 package com.damavis.spark.resource.file
 
-import java.time.LocalDate
+import java.time.{LocalDate, LocalDateTime, LocalTime}
 
 import com.damavis.spark.resource.Format.Format
 import com.damavis.spark.resource.{BasicResourceRW, RWBuilder, ResourceRW}
@@ -27,8 +27,21 @@ class FileRWBuilder(readParams: FileReaderParameters,
   }
 
   def betweenDates(from: LocalDate, to: LocalDate): FileRWBuilder = {
+    val time = LocalTime.of(0, 0, 0)
     val newReadParams =
-      readParams.copy(datePartitioned = true, from = Some(from), to = Some(to))
+      readParams.copy(from = Some(LocalDateTime.of(from, time)),
+                      to = Some(LocalDateTime.of(to, time)))
+
+    //TODO: MAKE THIS PARAMETERIZABLE!!!!!
+    val newWriteParams =
+      writeParams.copy(columnNames = "year" :: "month" :: "day" :: Nil)
+
+    new FileRWBuilder(newReadParams, newWriteParams)
+  }
+
+  def betweenDates(from: LocalDateTime, to: LocalDateTime): FileRWBuilder = {
+    val newReadParams =
+      readParams.copy(from = Some(from), to = Some(to))
     val newWriteParams =
       writeParams.copy(columnNames = "year" :: "month" :: "day" :: Nil)
 

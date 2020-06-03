@@ -15,10 +15,15 @@ class FileReader(params: FileReaderParameters) extends ResourceReader {
       val from = params.from.get
       val to = params.to.get
 
+      val partitionsToLoad = params.partitioningFormat
+        .generatePaths(from, to)
+        .map(partition => s"$path/$partition")
+
       spark.read
         .option("basePath", path)
         .format(params.format.toString)
-        .load(DatePaths.generate(path, from, to): _*)
+        //.load(DatePaths.generate(path, from, to): _*)
+        .load(partitionsToLoad: _*)
 
     } else {
       spark.read
