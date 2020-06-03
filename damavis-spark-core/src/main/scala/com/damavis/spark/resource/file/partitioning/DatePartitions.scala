@@ -2,14 +2,21 @@ package com.damavis.spark.resource.file.partitioning
 
 import java.time.LocalDateTime
 
-import com.damavis.spark.fs.FileSystem
+import com.damavis.spark.fs.{FileSystem, HadoopFS}
+import org.apache.spark.sql.SparkSession
 
-abstract class DatePartitionFormat(fs: FileSystem) {
-  def dateToPath(date: LocalDateTime): String
+object DatePartitions {
+  def apply(pathGenerator: PartitionDateFormatter)(
+      implicit spark: SparkSession): DatePartitions = {
+    val fs = HadoopFS()
+    new DatePartitions(fs, pathGenerator)
+  }
+}
 
+class DatePartitions(fs: FileSystem, pathGenerator: PartitionDateFormatter) {
   def generatePaths(from: LocalDateTime, to: LocalDateTime): Seq[String] = {
     datesGen(from, to)
-      .map(dateToPath)
+      .map(pathGenerator.dateToPath)
       .par
       .filter(fs.pathExists)
       .seq

@@ -3,7 +3,7 @@ package com.damavis.spark.resource.file
 import java.time.{LocalDate, LocalDateTime, LocalTime}
 
 import com.damavis.spark.resource.Format.Format
-import com.damavis.spark.resource.file.partitioning.DatePartitionFormat
+import com.damavis.spark.resource.file.partitioning.PartitionDateFormatter
 import com.damavis.spark.resource.{ReaderBuilder, ResourceReader}
 import org.apache.spark.sql.SparkSession
 
@@ -43,8 +43,7 @@ class FileReaderBuilder(params: FileReaderParameters)(
     new FileReaderBuilder(newParams)
   }
 
-  def usingPartitioningFormat(
-      format: DatePartitionFormat): FileReaderBuilder = {
+  def usingPathGenerator(format: PartitionDateFormatter): FileReaderBuilder = {
     val newParams = params.copy(partitioningFormat = format)
 
     new FileReaderBuilder(newParams)

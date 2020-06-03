@@ -2,17 +2,15 @@ package com.damavis.spark.resource.file.partitioning
 
 import java.time.LocalDateTime
 
-import com.damavis.spark.fs.{FileSystem, HadoopFS}
-import org.apache.spark.sql.SparkSession
+class DateSplit(includeHour: Boolean = false) extends PartitionDateFormatter {
+  def dateToPath(date: LocalDateTime): String = {
+    val begin =
+      s"year=${date.getYear}/month=${date.getMonthValue}/day=${date.getDayOfMonth}"
 
-object DateSplit {
-  def apply()(implicit spark: SparkSession): DateSplit = {
-    new DateSplit(HadoopFS())
-  }
-}
-
-class DateSplit(fs: FileSystem) extends DatePartitionFormat(fs) {
-  override def dateToPath(date: LocalDateTime): String = {
-    s"year=${date.getYear}/month=${date.getMonthValue}/day=${date.getDayOfMonth}"
+    if (includeHour) {
+      s"$begin/h=${isoHour(date)}"
+    } else {
+      begin
+    }
   }
 }
