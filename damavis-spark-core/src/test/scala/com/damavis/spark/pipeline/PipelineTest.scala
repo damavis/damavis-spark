@@ -2,14 +2,15 @@ package com.damavis.spark.pipeline
 
 import com.damavis.spark.database.{Database, DbManager}
 import com.damavis.spark._
+import com.damavis.spark.resource.Format
 import com.damavis.spark.resource.datasource.{
   TableReaderBuilder,
   TableWriterBuilder
 }
-import com.damavis.spark.resource.datasource.enums.Format
 import com.damavis.spark.utils.SparkTestSupport
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SaveMode}
+
 import scala.collection.JavaConverters._
 
 class PipelineTest extends SparkTestSupport {

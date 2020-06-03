@@ -1,10 +1,10 @@
-package com.damavis.spark.resource.parquet
+package com.damavis.spark.resource.file
 
 import com.damavis.spark.fs.{FileSystem, HadoopFS}
 import com.damavis.spark.resource.{DatePaths, ResourceReader}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
-class ParquetReader(params: ParquetReaderParameters) extends ResourceReader {
+class FileReader(params: FileReaderParameters) extends ResourceReader {
   private implicit val fs: FileSystem = HadoopFS()(params.sparkSession)
 
   override def read(): DataFrame = {

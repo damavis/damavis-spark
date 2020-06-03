@@ -2,8 +2,8 @@ package com.damavis.spark.resource.datasource
 
 import com.damavis.spark.database.exceptions.TableDefinitionException
 import com.damavis.spark.database.{Database, DummyTable, RealTable, Table}
-import com.damavis.spark.resource.datasource.enums.Format.Format
-import com.damavis.spark.resource.datasource.enums.OverwritePartitionBehavior._
+import com.damavis.spark.resource.Format.Format
+import com.damavis.spark.resource.datasource.OverwritePartitionBehavior._
 import com.damavis.spark.resource.{ResourceWriter, WriterBuilder}
 import org.apache.spark.sql.{SaveMode, SparkSession}
 

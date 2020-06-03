@@ -1,36 +1,36 @@
-package com.damavis.spark.resource.parquet
+package com.damavis.spark.resource.file
 
 import java.time.LocalDate
 
+import com.damavis.spark.resource.Format.Format
 import com.damavis.spark.resource.{ReaderBuilder, ResourceReader}
 import org.apache.spark.sql.SparkSession
 
-object ParquetReaderBuilder {
-  def apply(path: String)(
-      implicit spark: SparkSession): ParquetReaderBuilder = {
-    val params = ParquetReaderParameters(path, spark)
-    new ParquetReaderBuilder(params)
+object FileReaderBuilder {
+  def apply(format: Format, path: String)(
+      implicit spark: SparkSession): FileReaderBuilder = {
+    val params = FileReaderParameters(format, path, spark)
+    new FileReaderBuilder(params)
   }
 
-  def apply(params: ParquetReaderParameters): ParquetReaderBuilder =
-    new ParquetReaderBuilder(params)
+  def apply(params: FileReaderParameters): FileReaderBuilder =
+    new FileReaderBuilder(params)
 }
 
-class ParquetReaderBuilder(params: ParquetReaderParameters)
-    extends ReaderBuilder {
+class FileReaderBuilder(params: FileReaderParameters) extends ReaderBuilder {
 
   override def reader(): ResourceReader = {
     if (params.datePartitioned)
       checkProperDates()
 
-    new ParquetReader(params)
+    new FileReader(params)
   }
 
-  def betweenDates(from: LocalDate, to: LocalDate): ParquetReaderBuilder = {
+  def betweenDates(from: LocalDate, to: LocalDate): FileReaderBuilder = {
     val newParams =
       params.copy(datePartitioned = true, from = Some(from), to = Some(to))
 
-    new ParquetReaderBuilder(newParams)
+    new FileReaderBuilder(newParams)
   }
 
   private def checkProperDates(): Unit = {

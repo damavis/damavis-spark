@@ -1,10 +1,12 @@
-package com.damavis.spark.resource.parquet
+package com.damavis.spark.resource.file
 
 import java.time.LocalDate
 
+import com.damavis.spark.resource.Format.Format
 import org.apache.spark.sql.SparkSession
 
-private[resource] case class ParquetReaderParameters(
+private[resource] case class FileReaderParameters(
+    format: Format,
     path: String,
     sparkSession: SparkSession,
     datePartitioned: Boolean = false,

@@ -1,14 +1,11 @@
 package com.damavis.spark.resource.datasource
 
 import com.damavis.spark.database.{Database, DbManager}
-import com.damavis.spark.resource.datasource.enums.{
-  Format,
-  OverwritePartitionBehavior
-}
 import com.damavis.spark.utils.SparkTestSupport
 import org.apache.spark.sql.{Row, SaveMode}
 import com.damavis.spark._
 import com.damavis.spark.database.exceptions.TableAccessException
+import com.damavis.spark.resource.Format
 import org.apache.spark.sql.types._
 
 import scala.collection.JavaConverters._
