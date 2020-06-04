@@ -1,6 +1,6 @@
-package com.damavis.spark.pipeline2
+package com.damavis.spark.dataflow
 
-import com.damavis.spark.pipeline2.entities._
+import com.damavis.spark.dataflow.entities._
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.apache.spark.sql.DataFrame
 import org.scalatest.WordSpec

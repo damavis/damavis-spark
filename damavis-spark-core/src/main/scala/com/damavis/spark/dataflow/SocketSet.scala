@@ -1,3 +1,3 @@
-package com.damavis.spark.pipeline2
+package com.damavis.spark.dataflow
 
 case class SocketSet(left: StageSocket, right: StageSocket)

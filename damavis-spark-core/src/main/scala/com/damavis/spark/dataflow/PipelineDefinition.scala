@@ -1,4 +1,4 @@
-package com.damavis.spark.pipeline2
+package com.damavis.spark.dataflow
 
 class PipelineDefinition() {
   var sources: List[PipelineStage] = Nil

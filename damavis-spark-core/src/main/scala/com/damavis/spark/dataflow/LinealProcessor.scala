@@ -1,4 +1,4 @@
-package com.damavis.spark.pipeline2
+package com.damavis.spark.dataflow
 import org.apache.spark.sql.DataFrame
 
 abstract class LinealProcessor extends Processor {

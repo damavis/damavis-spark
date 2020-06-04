@@ -1,4 +1,4 @@
-package com.damavis.spark.pipeline2
+package com.damavis.spark.dataflow
 
 import com.damavis.spark.database.{Database, DbManager}
 import com.damavis.spark._
