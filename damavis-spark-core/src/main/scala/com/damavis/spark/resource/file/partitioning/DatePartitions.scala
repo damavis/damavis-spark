@@ -15,9 +15,8 @@ object DatePartitions {
 
 class DatePartitions(fs: FileSystem, pathGenerator: PartitionDateFormatter) {
   def generatePaths(from: LocalDateTime, to: LocalDateTime): Seq[String] = {
-    datesGen(from, to)
+    datesGen(from, to).par
       .map(pathGenerator.dateToPath)
-      .par
       .filter(fs.pathExists)
       .seq
   }
@@ -34,7 +33,8 @@ class DatePartitions(fs: FileSystem, pathGenerator: PartitionDateFormatter) {
                  pointer: LocalDateTime,
                  end: LocalDateTime): List[LocalDateTime] = {
       if (pointer.isAfter(end)) acc
-      else datesGen(acc :+ pointer, pointer.plusDays(1), end)
+      //TODO: extract minimum granularity from GenericDateFormatter
+      else datesGen(acc :+ pointer, pointer.plusHours(1), end)
     }
     datesGen(List(), from, to)
   }
