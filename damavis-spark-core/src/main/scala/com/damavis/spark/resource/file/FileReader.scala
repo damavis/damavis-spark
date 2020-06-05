@@ -12,7 +12,7 @@ class FileReader(params: FileReaderParameters)(implicit spark: SparkSession)
     if (params.datePartitioned) {
       val from = params.from.get
       val to = params.to.get
-      val partitionGenerator = DatePartitions(params.partitioningFormat)
+      val partitionGenerator = DatePartitions(params.partitionFormatter)
 
       val partitionsToLoad = partitionGenerator
         .generatePaths(from, to)

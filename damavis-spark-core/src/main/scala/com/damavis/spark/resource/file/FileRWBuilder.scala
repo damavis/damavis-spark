@@ -3,7 +3,7 @@ package com.damavis.spark.resource.file
 import java.time.{LocalDate, LocalDateTime, LocalTime}
 
 import com.damavis.spark.resource.Format.Format
-import com.damavis.spark.resource.file.partitioning.PartitionDateFormatter
+import com.damavis.spark.resource.file.partitioning.DatePartitionFormatter
 import com.damavis.spark.resource.{BasicResourceRW, RWBuilder, ResourceRW}
 import org.apache.spark.sql.SparkSession
 
@@ -39,17 +39,17 @@ class FileRWBuilder(
 
     val newWriteParams =
       writeParams.copy(
-        columnNames = newReadParams.partitioningFormat.columnNames)
+        columnNames = newReadParams.partitionFormatter.columnNames)
 
     new FileRWBuilder(newReadParams, newWriteParams)
   }
 
-  def partitionDateFormat(format: PartitionDateFormatter): FileRWBuilder = {
-    val newReadParams = readParams.copy(partitioningFormat = format)
+  def partitionDateFormat(formatter: DatePartitionFormatter): FileRWBuilder = {
+    val newReadParams = readParams.copy(partitionFormatter = formatter)
 
     val newWriteParams =
       writeParams.copy(
-        columnNames = newReadParams.partitioningFormat.columnNames)
+        columnNames = newReadParams.partitionFormatter.columnNames)
 
     new FileRWBuilder(newReadParams, newWriteParams)
   }

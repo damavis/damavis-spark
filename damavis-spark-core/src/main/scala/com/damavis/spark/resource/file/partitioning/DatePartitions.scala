@@ -6,14 +6,14 @@ import com.damavis.spark.fs.{FileSystem, HadoopFS}
 import org.apache.spark.sql.SparkSession
 
 object DatePartitions {
-  def apply(pathGenerator: PartitionDateFormatter)(
+  def apply(pathGenerator: DatePartitionFormatter)(
       implicit spark: SparkSession): DatePartitions = {
     val fs = HadoopFS()
     new DatePartitions(fs, pathGenerator)
   }
 }
 
-class DatePartitions(fs: FileSystem, pathGenerator: PartitionDateFormatter) {
+class DatePartitions(fs: FileSystem, pathGenerator: DatePartitionFormatter) {
   def generatePaths(from: LocalDateTime, to: LocalDateTime): Seq[String] = {
     datesGen(from, to).par
       .map(pathGenerator.dateToPath)
@@ -21,19 +21,13 @@ class DatePartitions(fs: FileSystem, pathGenerator: PartitionDateFormatter) {
       .seq
   }
 
-  private def datesGen(date1: LocalDateTime,
-                       date2: LocalDateTime): List[LocalDateTime] = {
-    val (from, to) = {
-      if (date2.isAfter(date1)) (date1, date2)
-      else if (date1.isAfter(date2)) (date2, date1)
-      else (date1, date1)
-    }
-
+  private def datesGen(from: LocalDateTime,
+                       to: LocalDateTime): List[LocalDateTime] = {
     def datesGen(acc: List[LocalDateTime],
                  pointer: LocalDateTime,
                  end: LocalDateTime): List[LocalDateTime] = {
       if (pointer.isAfter(end)) acc
-      //TODO: extract minimum granularity from GenericDateFormatter
+      //TODO: extract minimum granularity from DatePartitionFormatter
       else datesGen(acc :+ pointer, pointer.plusHours(1), end)
     }
     datesGen(List(), from, to)
