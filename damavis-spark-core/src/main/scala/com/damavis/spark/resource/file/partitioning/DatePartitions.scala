@@ -23,12 +23,13 @@ class DatePartitions(fs: FileSystem, pathGenerator: DatePartitionFormatter) {
 
   private def datesGen(from: LocalDateTime,
                        to: LocalDateTime): List[LocalDateTime] = {
+    val minimumTime = pathGenerator.minimumTemporalUnit()
+
     def datesGen(acc: List[LocalDateTime],
                  pointer: LocalDateTime,
                  end: LocalDateTime): List[LocalDateTime] = {
       if (pointer.isAfter(end)) acc
-      //TODO: extract minimum granularity from DatePartitionFormatter
-      else datesGen(acc :+ pointer, pointer.plusHours(1), end)
+      else datesGen(acc :+ pointer, pointer.plus(1, minimumTime), end)
     }
     datesGen(List(), from, to)
   }
