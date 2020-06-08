@@ -1,7 +1,6 @@
 package com.damavis.spark.utils
 
 import com.damavis.spark.SparkApp
-import com.holdenkarau.spark.testing.HDFSCluster
 import org.apache.spark.sql.Dataset
 import org.scalatest.{BeforeAndAfterAll, WordSpec}
 
@@ -11,7 +10,7 @@ class SparkTestSupport extends WordSpec with SparkApp with BeforeAndAfterAll {
   override val name: String = this.getClass.getName.split("\\.").last
 
   protected def root: String =
-    s"${hdfsCluster.getNameNodeURI()}/$name"
+    s"${HDFSCluster.uri}/$name"
 
   override def conf: Map[String, String] = {
 
@@ -19,7 +18,7 @@ class SparkTestSupport extends WordSpec with SparkApp with BeforeAndAfterAll {
       //Where to store managed tables
       "spark.sql.warehouse.dir" -> warehouseConf,
       //URI of the hdfs server
-      "spark.hadoop.fs.default.name" -> hdfsCluster.getNameNodeURI(),
+      "spark.hadoop.fs.default.name" -> HDFSCluster.uri,
       //Hive metastore configuration
       "spark.sql.catalogImplementation" -> "hive",
       "spark.hadoop.javax.jdo.option.ConnectionDriverName" -> "org.apache.derby.jdbc.EmbeddedDriver",
@@ -28,21 +27,11 @@ class SparkTestSupport extends WordSpec with SparkApp with BeforeAndAfterAll {
   }
 
   private var warehouseConf: String = _
-  protected var hdfsCluster: HDFSCluster = _
 
   override def beforeAll(): Unit = {
     super.beforeAll()
 
     warehouseConf = s"/sparktest-$name-warehouse"
-
-    hdfsCluster = new HDFSCluster
-    hdfsCluster.startHDFS()
-  }
-
-  override def afterAll(): Unit = {
-    hdfsCluster.shutdownHDFS()
-
-    super.afterAll()
   }
 
   def checkExceptionOfType[T <: Throwable](tryResult: Try[_],
