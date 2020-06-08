@@ -99,7 +99,7 @@ class DatabaseTest extends SparkTestSupport {
       val expected = RealTable(
         "test",
         "dummy_going_real",
-        s"$root/sparktest-DatabaseTest-warehouse/test.db/dummy_going_real",
+        "hdfs://localhost:8020/sparktest-DatabaseTest-warehouse/test.db/dummy_going_real",
         Format.Parquet,
         managed = true,
         Column("number", "int", partitioned = false, nullable = true) :: Nil

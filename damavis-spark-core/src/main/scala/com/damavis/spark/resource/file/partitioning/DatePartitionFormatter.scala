@@ -18,6 +18,10 @@ object DatePartitionFormatter {
   }
 
   def apply(definitions: Seq[DatePartColumn]): DatePartitionFormatter = {
+    if (definitions.isEmpty)
+      throw new IllegalArgumentException(
+        "Column definitions for a DatePartitionFormatter cannot be empty")
+
     val cols = definitions.map { columnDef =>
       try {
         (columnDef.columnName, DateTimeFormatter.ofPattern(columnDef.format))

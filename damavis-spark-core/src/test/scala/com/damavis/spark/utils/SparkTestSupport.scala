@@ -10,7 +10,8 @@ import scala.util.Try
 class SparkTestSupport extends WordSpec with SparkApp with BeforeAndAfterAll {
   override val name: String = this.getClass.getName.split("\\.").last
 
-  protected def root: String = hdfsCluster.getNameNodeURI()
+  protected def root: String =
+    s"${hdfsCluster.getNameNodeURI()}/$name"
 
   override def conf: Map[String, String] = {
 
@@ -32,8 +33,7 @@ class SparkTestSupport extends WordSpec with SparkApp with BeforeAndAfterAll {
   override def beforeAll(): Unit = {
     super.beforeAll()
 
-    val className = name.split("\\.").last
-    warehouseConf = s"/sparktest-$className-warehouse"
+    warehouseConf = s"/sparktest-$name-warehouse"
 
     hdfsCluster = new HDFSCluster
     hdfsCluster.startHDFS()
