@@ -2,8 +2,8 @@ package com.damavis.spark.database
 
 import com.damavis.spark.database.exceptions._
 import com.damavis.spark.fs.FileSystem
-import com.damavis.spark.resource.datasource.enums.Format
-import com.damavis.spark.resource.datasource.enums.Format.Format
+import com.damavis.spark.resource.Format
+import com.damavis.spark.resource.Format.Format
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.catalog.{Catalog, Database => SparkDatabase}
@@ -56,9 +56,9 @@ class Database(
     }
   }
 
-  def getExternalTable(name: String,
-                       path: String,
-                       format: Format.Format): Try[Table] = {
+  def getUnmanagedTable(name: String,
+                        path: String,
+                        format: Format): Try[Table] = {
     Try {
       val dbPath = parseAndCheckTableName(name)
       val actualName = dbPath._2
@@ -86,14 +86,15 @@ class Database(
   private def validateExternalTable(table: Table,
                                     name: String,
                                     requestedPath: String,
-                                    requestedFormat: Format.Format): Unit = {
+                                    requestedFormat: Format): Unit = {
     if (table.managed) {
       val msg =
         s"""Requested external table $name, which is already registered as MANAGED in the catalog"""
       throw new TableAccessException(msg)
     }
 
-    if (table.path != requestedPath) {
+    // Table path usually begins with "hdfs:<host>/...", which won't be in the requestedPath
+    if (!table.path.endsWith(requestedPath)) {
       val msg =
         s"""Requested external table $name from path: "$requestedPath".
            |It is already registered in the catalog with a different path.
@@ -169,7 +170,7 @@ class Database(
   }
 
   private def createManagedTable(name: String,
-                                 format: Format.Format,
+                                 format: Format,
                                  schema: StructType,
                                  partitionColumns: String*): Unit = {
     /*NOTE: As of current Spark version (2.4.5), is not possible to create a partitioned HIVE table using
@@ -185,7 +186,7 @@ class Database(
   }
 
   private def rawSQLCreateTable(name: String,
-                                format: Format.Format,
+                                format: Format,
                                 schema: StructType,
                                 partitionBy: String*): Unit = {
     val ddl = s"""CREATE TABLE IF NOT EXISTS $name

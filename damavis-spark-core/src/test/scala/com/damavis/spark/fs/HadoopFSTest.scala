@@ -1,18 +1,14 @@
 package com.damavis.spark.fs
 
-import com.damavis.spark.entities.Author
 import com.damavis.spark.utils.SparkTestSupport
+import com.damavis.spark._
 
 class HadoopFSTest extends SparkTestSupport {
-
-  import session.implicits._
 
   override def beforeAll(): Unit = {
     super.beforeAll()
 
-    (Author("person1", 23, "ES") :: Author("person2", 346, "ES") :: Nil)
-      .toDF()
-      .write
+    dfFromAuthors(bradbury).write
       .format("parquet")
       .save("/persons")
   }

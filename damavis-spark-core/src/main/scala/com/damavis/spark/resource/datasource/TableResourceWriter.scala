@@ -1,13 +1,9 @@
 package com.damavis.spark.resource.datasource
 
-import com.damavis.spark.database.exceptions.{
-  TableAccessException,
-  TableDefinitionException
-}
+import com.damavis.spark.database.exceptions.TableAccessException
 import com.damavis.spark.database.{Database, Table}
 import com.damavis.spark.resource.ResourceWriter
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
-import enums.OverwritePartitionBehavior
 
 class TableResourceWriter(spark: SparkSession,
                           table: Table,
