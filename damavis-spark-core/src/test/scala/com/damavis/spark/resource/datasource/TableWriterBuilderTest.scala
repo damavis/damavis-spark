@@ -1,9 +1,11 @@
 package com.damavis.spark.resource.datasource
 
 import com.damavis.spark.database.{Database, DbManager}
+import com.damavis.spark.{dfFromAuthors, hemingway}
 import com.damavis.spark.utils.SparkTestSupport
 import com.damavis.spark._
 import com.damavis.spark.database.exceptions.TableDefinitionException
+import com.damavis.spark.resource.Format
 
 import scala.util.Try
 

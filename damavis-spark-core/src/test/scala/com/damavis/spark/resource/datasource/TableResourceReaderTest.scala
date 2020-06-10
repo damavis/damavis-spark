@@ -4,6 +4,7 @@ import com.damavis.spark.database.{Database, DbManager}
 import com.damavis.spark.utils.SparkTestSupport
 import com.damavis.spark._
 import com.damavis.spark.database.exceptions.TableAccessException
+import com.damavis.spark.resource.Format
 import org.apache.spark.sql.SaveMode
 
 class TableResourceReaderTest extends SparkTestSupport {
@@ -22,7 +23,7 @@ class TableResourceReaderTest extends SparkTestSupport {
       authors.write.parquet(s"$root/authors")
 
       val tryTable =
-        db.getExternalTable("authors", s"$root/authors", Format.Parquet)
+        db.getUnmanagedTable("authors", s"/$name/authors", Format.Parquet)
       assert(tryTable.isSuccess)
 
       val readDf = TableReaderBuilder(tryTable.get).reader().read()
