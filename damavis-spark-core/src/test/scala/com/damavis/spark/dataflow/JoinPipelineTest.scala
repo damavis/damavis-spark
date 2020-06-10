@@ -7,10 +7,12 @@ import com.damavis.spark.resource.datasource.{
   TableWriterBuilder
 }
 import com.damavis.spark.utils.SparkTestSupport
-import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions._
+import org.apache.spark.sql.types._
 
+import scala.collection.JavaConverters._
 import scala.language.postfixOps
 
 class JoinPipelineTest extends SparkTestSupport {
@@ -86,10 +88,23 @@ class JoinPipelineTest extends SparkTestSupport {
 
       pipeline.run()
 
-      TableReaderBuilder(db.getTable("oldest_books").get)
+      val generated = TableReaderBuilder(db.getTable("oldest_books").get)
         .reader()
         .read()
-        .show(false)
+
+      val expectedData = (Row("Hemingway", "A Farewell to Arms", 1929) ::
+        Row("H.G. Wells", "The Time Machine", 1895) ::
+        Row("Dickens", "Oliver Twist", 1839) ::
+        Nil).asJava
+
+      val schema = StructType(
+        StructField("author", StringType, nullable = true) ::
+          StructField("title", StringType, nullable = true) ::
+          StructField("publicationYear", IntegerType, nullable = true) :: Nil
+      )
+
+      val expected = session.createDataFrame(expectedData, schema)
+      checkDataFramesEqual(generated, expected)
     }
   }
 }
