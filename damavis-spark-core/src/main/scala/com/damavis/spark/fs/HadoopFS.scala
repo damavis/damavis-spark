@@ -5,17 +5,19 @@ import org.apache.hadoop.fs.Path
 import org.apache.spark.sql.SparkSession
 
 object HadoopFS {
-  def apply()(implicit spark: SparkSession): HadoopFS = new HadoopFS()
+  def apply(root: String = "/")(implicit spark: SparkSession): HadoopFS =
+    new HadoopFS(new Path(root))
 }
 
-class HadoopFS()(implicit spark: SparkSession) extends FileSystem {
+class HadoopFS(root: Path)(implicit spark: SparkSession) extends FileSystem {
 
   protected val hadoopConf: Configuration =
     spark.sparkContext.hadoopConfiguration
 
   override def pathExists(path: String): Boolean = {
-    val hdfsPath = new Path(path)
+    val hdfsPath = new Path(s"$root/$path")
 
-    hdfsPath.getFileSystem(hadoopConf).exists(hdfsPath)
+    val fs = hdfsPath.getFileSystem(hadoopConf)
+    fs.exists(hdfsPath)
   }
 }

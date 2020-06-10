@@ -28,13 +28,13 @@ class PipelineTest extends SparkTestSupport {
       import com.damavis.spark.pipeline.implicits._
 
       val personDf = dfFromAuthors(hemingway, bradbury, dickens)
-      personDf.write.parquet(s"$root/external-authors")
+      personDf.write.parquet(s"/$name/external-authors")
 
       val nationalitiesTable = db.getTable("nationalities").get
 
       val inTable =
         db.getUnmanagedTable("external_authors_table",
-                             s"$root/external-authors",
+                             s"/$name/external-authors",
                              Format.Parquet)
           .get
 

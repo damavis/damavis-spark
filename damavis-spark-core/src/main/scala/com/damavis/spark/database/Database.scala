@@ -93,7 +93,8 @@ class Database(
       throw new TableAccessException(msg)
     }
 
-    if (table.path != requestedPath) {
+    // Table path usually begins with "hdfs:<host>/...", which won't be in the requestedPath
+    if (!table.path.endsWith(requestedPath)) {
       val msg =
         s"""Requested external table $name from path: "$requestedPath".
            |It is already registered in the catalog with a different path.

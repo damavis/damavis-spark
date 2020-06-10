@@ -23,7 +23,7 @@ class TableResourceReaderTest extends SparkTestSupport {
       authors.write.parquet(s"$root/authors")
 
       val tryTable =
-        db.getUnmanagedTable("authors", s"$root/authors", Format.Parquet)
+        db.getUnmanagedTable("authors", s"/$name/authors", Format.Parquet)
       assert(tryTable.isSuccess)
 
       val readDf = TableReaderBuilder(tryTable.get).reader().read()

@@ -1,14 +1,16 @@
-package com.damavis.spark.resource.file.partitioning
+package com.damavis.spark.resource.partitioning
 
 import java.time.LocalDateTime
 
 import com.damavis.spark.fs.{FileSystem, HadoopFS}
 import org.apache.spark.sql.SparkSession
 
+import scala.reflect.io.Path
+
 object DatePartitions {
-  def apply(pathGenerator: DatePartitionFormatter)(
+  def apply(root: String, pathGenerator: DatePartitionFormatter)(
       implicit spark: SparkSession): DatePartitions = {
-    val fs = HadoopFS()
+    val fs = HadoopFS(root)
     new DatePartitions(fs, pathGenerator)
   }
 }

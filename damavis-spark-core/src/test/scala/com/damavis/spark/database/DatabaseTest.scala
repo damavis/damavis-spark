@@ -27,14 +27,14 @@ class DatabaseTest extends SparkTestSupport {
       assert(db.catalog.listTables().isEmpty)
 
       val tryTable = db.getUnmanagedTable("numbers",
-                                          s"$root/numbers_external",
+                                          s"/$name/numbers_external",
                                           Format.Parquet)
       assert(tryTable.isSuccess)
 
       val table = tryTable.get
       val expected = RealTable("test",
                                "numbers",
-                               s"$root/numbers_external",
+                               s"/$name/numbers_external",
                                Format.Parquet,
                                managed = false,
                                Nil)
@@ -45,7 +45,7 @@ class DatabaseTest extends SparkTestSupport {
 
     "fail to get an external table if there is no data" in {
       val tryTable =
-        db.getUnmanagedTable("numbers", s"$root/1234", Format.Parquet)
+        db.getUnmanagedTable("numbers", s"/$name/1234", Format.Parquet)
       checkExceptionOfType(tryTable,
                            classOf[TableAccessException],
                            "Path not reachable")
@@ -60,7 +60,7 @@ class DatabaseTest extends SparkTestSupport {
                              Map[String, String]())
 
       val tryTable1 = db.getUnmanagedTable("numbers1",
-                                           s"$root/numbers_external",
+                                           s"/$name/numbers_external",
                                            Format.Parquet)
       checkExceptionOfType(tryTable1,
                            classOf[TableAccessException],
@@ -68,14 +68,14 @@ class DatabaseTest extends SparkTestSupport {
 
       //Register an external table, and try to get it again but with wrong parameters
       numbersDf.write
-        .parquet(s"$root/numbers_external2")
+        .parquet(s"/$name/numbers_external2")
 
       db.getUnmanagedTable("numbers_wrong_path",
-                           s"$root/numbers_external2",
+                           s"/$name/numbers_external2",
                            Format.Parquet)
 
       val tryTable2 = db.getUnmanagedTable("numbers_wrong_path",
-                                           s"$root/numbers_external",
+                                           s"/$name/numbers_external",
                                            Format.Parquet)
       checkExceptionOfType(
         tryTable2,
@@ -83,7 +83,7 @@ class DatabaseTest extends SparkTestSupport {
         "It is already registered in the catalog with a different path")
 
       val tryTable3 = db.getUnmanagedTable("numbers_wrong_path",
-                                           s"$root/numbers_external2",
+                                           s"/$name/numbers_external2",
                                            Format.Avro)
       checkExceptionOfType(
         tryTable3,

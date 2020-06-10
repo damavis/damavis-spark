@@ -1,8 +1,15 @@
 package com.damavis.spark.resource.file
 
+import java.time.LocalDate
+
+import org.apache.spark.sql.functions._
 import com.damavis.spark._
 import com.damavis.spark.resource.Format
 import com.damavis.spark.utils.SparkTestSupport
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.types._
+
+import scala.collection.JavaConverters._
 
 class FileReaderTest extends SparkTestSupport {
   "A FileReader" when {
@@ -42,11 +49,50 @@ class FileReaderTest extends SparkTestSupport {
     }
 
     "there is standard date partitioning" should {
-      "read only data between the required dates" in {}
+      "read only data between the required dates" in {
+        val authors = dfFromAuthors(hemingway, dickens, hugo, dumas, bradbury)
+          .withColumn("birthAsDate", to_date(col("birthdate"), "yyyy-MM-dd"))
+          .withColumn("year", date_format(col("birthAsDate"), "yyyy"))
+          .withColumn("month", date_format(col("birthAsDate"), "MM"))
+          .withColumn("day", date_format(col("birthAsDate"), "dd"))
+          .drop("birthAsDate")
+
+        val path = s"/$name/authors4"
+
+        authors.write.partitionBy("year", "month", "day").parquet(path)
+
+        val from = LocalDate.parse("1802-01-01")
+        val to = LocalDate.parse("1802-12-31")
+        val actorsFromTwo = FileReaderBuilder(Format.Parquet, path)
+          .betweenDates(from, to)
+          .reader()
+          .read()
+
+        val rows =
+          (Row("Alexandre Dumas", 68, "1802-07-24", "FR", 1802, 7, 24) ::
+            Row("Victor Hugo", 83, "1802-02-26", "FR", 1802, 2, 26) ::
+            Nil).asJava
+
+        val schema = StructType(
+          StructField("name", StringType, nullable = true) ::
+            StructField("deceaseAge", IntegerType, nullable = true) ::
+            StructField("birthDate", StringType, nullable = true) ::
+            StructField("nationality", StringType, nullable = true) ::
+            StructField("year", IntegerType, nullable = true) ::
+            StructField("month", IntegerType, nullable = true) ::
+            StructField("day", IntegerType, nullable = true) ::
+            Nil
+        )
+
+        val expected = session.createDataFrame(rows, schema)
+        checkDataFramesEqual(actorsFromTwo, expected)
+      }
     }
 
     "there is custom partitioning" should {
-      "read only data between the required dates" in {}
+      "read only data between the required dates" in {
+        //TODO: as the previous test, but using a partitioning scheme different than standard (for instance dt=.../h=)
+      }
     }
   }
 

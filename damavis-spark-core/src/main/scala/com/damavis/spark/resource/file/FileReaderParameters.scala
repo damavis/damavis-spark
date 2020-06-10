@@ -3,7 +3,7 @@ package com.damavis.spark.resource.file
 import java.time.LocalDateTime
 
 import com.damavis.spark.resource.Format.Format
-import com.damavis.spark.resource.file.partitioning.DatePartitionFormatter
+import com.damavis.spark.resource.partitioning.DatePartitionFormatter
 import org.apache.spark.sql.SparkSession
 
 private[resource] object FileReaderParameters {
