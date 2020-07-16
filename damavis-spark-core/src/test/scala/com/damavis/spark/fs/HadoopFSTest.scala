@@ -1,9 +1,9 @@
 package com.damavis.spark.fs
 
-import com.damavis.spark.utils.SparkTestSupport
-import com.damavis.spark._
+import com.damavis.spark.utils.{SparkTestBase}
+import com.damavis.spark.testdata._
 
-class HadoopFSTest extends SparkTestSupport {
+class HadoopFSTest extends SparkTestBase {
 
   override def beforeAll(): Unit = {
     super.beforeAll()

@@ -30,6 +30,16 @@ class FileReaderBuilder(params: FileReaderParameters)(
     new FileReader(params)
   }
 
+  def partitioning(partitionFormatter: DatePartitionFormatter): FileReaderBuilder = {
+    val newParams = params.copy(partitionFormatter = partitionFormatter)
+    new FileReaderBuilder(newParams)
+  }
+
+  def options(options: Map[String, String]): FileReaderBuilder = {
+    val newParams = params.copy(options = options)
+    new FileReaderBuilder(newParams)
+  }
+
   def betweenDates(from: LocalDate, to: LocalDate): FileReaderBuilder = {
     val time = LocalTime.of(0, 0, 0)
     betweenDates(LocalDateTime.of(from, time), LocalDateTime.of(to, time))

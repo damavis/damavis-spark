@@ -19,15 +19,31 @@ class FileReader(params: FileReaderParameters)(implicit spark: SparkSession)
         .generatePaths(from, to)
         .map(partition => s"$path/$partition")
 
-      spark.read
-        .option("basePath", path)
-        .format(params.format.toString)
-        .load(partitionsToLoad: _*)
+      val reader = {
+        val reader = spark.read
+          .option("basePath", path)
+          .format(params.format.toString)
+
+        params.schema match {
+          case Some(schema) => reader.schema(schema)
+          case None         => reader
+        }
+      }
+
+      reader.load(partitionsToLoad: _*)
 
     } else {
-      spark.read
-        .format(params.format.toString)
-        .load(path)
+      val reader = {
+        val reader = spark.read
+          .format(params.format.toString)
+
+        params.schema match {
+          case Some(schema) => reader.schema(schema)
+          case None         => reader
+        }
+      }
+
+      reader.load(path)
     }
   }
 }

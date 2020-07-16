@@ -1,17 +1,18 @@
-package com.damavis
+package com.damavis.spark
 
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter._
+import java.time.format.DateTimeFormatter.ISO_LOCAL_DATE
 import java.util.concurrent.atomic.AtomicInteger
 
 import com.damavis.spark.database.{Database, Table}
-import com.damavis.spark.entities._
-import org.apache.spark.sql.types._
+import com.damavis.spark.entities.{Author, Book, Log}
+import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 
-import scala.collection.JavaConverters._
+import collection.JavaConverters._
 
-package object spark {
+package object testdata {
+
   val hemingway: Author =
     Author("Hemingway", 61, LocalDate.parse("1899-07-21"), "USA")
   val wells: Author =
@@ -67,6 +68,10 @@ package object spark {
 
     val data = books.map(rowFromBook).asJava
     session.createDataFrame(data, booksSchema)
+  }
+
+  def dfFromLogs(logs: Log*)(implicit session: SparkSession): DataFrame = {
+    session.createDataFrame(logs)
   }
 
   private val tableCount = new AtomicInteger(0)
