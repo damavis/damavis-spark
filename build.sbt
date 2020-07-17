@@ -20,7 +20,7 @@ val settings = Seq(
   isSnapshot := version.value.endsWith("SNAPSHOT"),
   scalaVersion := "2.11.12",
   libraryDependencies ++= dependencies ++ testDependencies,
-  fork in Test := false,
+  fork in Test := true,
   parallelExecution in Test := false,
   envVars in Test := Map(
     "MASTER" -> "local[*]"

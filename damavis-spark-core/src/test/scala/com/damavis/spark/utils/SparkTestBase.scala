@@ -15,6 +15,7 @@ class SparkTestBase
     with DataFrameSuiteBase
     with SparkTestSupport
     with SparkContextProvider
+    with HDFSClusterLike
     with SharedSparkContext {
 
   var hdfsUri: String = _
@@ -28,9 +29,9 @@ class SparkTestBase
     new SparkConf()
       .setAppName(name)
       .setMaster("local[*]")
-      .set("spark.sql.warehouse.dir", warehouseConf) // Ignored by Holden Karau
-      .set("spark.hadoop.fs.default.name", HDFSCluster.uri)
       .set("spark.sql.catalogImplementation", "hive")
+      .set("spark.hadoop.fs.default.name", HDFSCluster.uri)
+      .set("spark.sql.warehouse.dir", warehouseConf) // Ignored by Holden Karau
       .set("spark.hadoop.javax.jdo.option.ConnectionDriverName",
            "org.apache.derby.jdbc.EmbeddedDriver")
       .set("spark.hadoop.javax.jdo.option.ConnectionURL",
