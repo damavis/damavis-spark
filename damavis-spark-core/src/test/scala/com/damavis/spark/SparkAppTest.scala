@@ -12,8 +12,11 @@ class SparkAppTest extends FlatSpec with SparkApp {
   private val warehouseDir = "/hive/warehouse/SparkAppTest"
 
   override def conf: Map[String, String] = super.conf + (
+    // Where to store managed tables
     "spark.sql.warehouse.dir" -> warehouseDir,
+    // URI of the hdfs server
     "spark.hadoop.fs.default.name" -> HDFSCluster.uri,
+    // Hive metastore configuration
     "spark.sql.catalogImplementation" -> "hive",
     "spark.hadoop.javax.jdo.option.ConnectionDriverName" -> "org.apache.derby.jdbc.EmbeddedDriver",
     "spark.hadoop.javax.jdo.option.ConnectionURL" -> "jdbc:derby:memory:myInMemDB;create=true"

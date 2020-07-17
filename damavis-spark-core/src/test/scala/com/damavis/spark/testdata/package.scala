@@ -6,7 +6,12 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import com.damavis.spark.database.{Database, Table}
 import com.damavis.spark.entities.{Author, Book, Log}
-import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
+import org.apache.spark.sql.types.{
+  IntegerType,
+  StringType,
+  StructField,
+  StructType
+}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 
 import collection.JavaConverters._
