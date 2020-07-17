@@ -1,13 +1,13 @@
 package com.damavis.spark.resource.datasource
 
 import com.damavis.spark.database.{Database, DbManager}
-import com.damavis.spark.utils.SparkTestSupport
-import com.damavis.spark._
+import com.damavis.spark.utils.{SparkTestBase}
+import com.damavis.spark.testdata._
 import com.damavis.spark.database.exceptions.TableAccessException
 import com.damavis.spark.resource.Format
 import org.apache.spark.sql.SaveMode
 
-class TableResourceReaderTest extends SparkTestSupport {
+class TableResourceReaderTest extends SparkTestBase {
   var db: Database = _
 
   override def beforeAll(): Unit = {
@@ -28,7 +28,7 @@ class TableResourceReaderTest extends SparkTestSupport {
 
       val readDf = TableReaderBuilder(tryTable.get).reader().read()
 
-      checkDataFramesEqual(readDf, authors)
+      assertDataFrameEquals(readDf, authors)
     }
 
     "read successfully a managed table registered in the catalog" in {
@@ -45,7 +45,8 @@ class TableResourceReaderTest extends SparkTestSupport {
 
       val obtained = TableReaderBuilder(tryTable.get).reader().read()
 
-      checkDataFramesEqual(obtained, authors)
+      assertDataFrameEquals(obtained.sort("birthDate"),
+                            authors.sort("birthDate"))
     }
 
     "fail to read a table not yet present in the catalog" in {

@@ -1,16 +1,16 @@
 package com.damavis.spark.resource.datasource
 
 import com.damavis.spark.database.{Database, DbManager}
-import com.damavis.spark.utils.SparkTestSupport
+import com.damavis.spark.utils.{SparkTestBase}
 import org.apache.spark.sql.{Row, SaveMode}
-import com.damavis.spark._
+import com.damavis.spark.testdata._
 import com.damavis.spark.database.exceptions.TableAccessException
 import com.damavis.spark.resource.Format
 import org.apache.spark.sql.types._
 
 import scala.collection.JavaConverters._
 
-class TableResourceWriterTest extends SparkTestSupport {
+class TableResourceWriterTest extends SparkTestBase {
 
   implicit var db: Database = _
 
@@ -59,7 +59,8 @@ class TableResourceWriterTest extends SparkTestSupport {
       assert(before == after)
 
       val written = session.read.table(tableName)
-      checkDataFramesEqual(written, personDf)
+      assertDataFrameEquals(written.sort("birthDate"),
+                            personDf.sort("birthDate"))
     }
 
     "there is no partitioning" should {
@@ -73,7 +74,7 @@ class TableResourceWriterTest extends SparkTestSupport {
         val written = session.read.table(table.name)
 
         assert(written.count() == 1)
-        checkDataFramesEqual(written, personDf)
+        assertDataFrameEquals(written, personDf)
       }
 
       "apply properly append save mode" in {
@@ -95,7 +96,8 @@ class TableResourceWriterTest extends SparkTestSupport {
         assert(written.count() == 2)
 
         val expectedDf = dfFromAuthors(hemingway, wells)
-        checkDataFramesEqual(written, expectedDf)
+        assertDataFrameEquals(written.sort("birthDate"),
+                              expectedDf.sort("birthDate"))
       }
 
       "apply properly overwrite save mode" in {
@@ -116,7 +118,7 @@ class TableResourceWriterTest extends SparkTestSupport {
         val written = session.read.table(table.name)
 
         assert(written.count() == 1)
-        checkDataFramesEqual(written, author2)
+        assertDataFrameEquals(written, author2)
       }
     }
 
@@ -133,7 +135,7 @@ class TableResourceWriterTest extends SparkTestSupport {
         val written = session.read.table(table.name)
 
         assert(written.count() == 1)
-        checkDataFramesEqual(written, personDf)
+        assertDataFrameEquals(written, personDf)
       }
 
       "overwrite all partitions by default" in {
@@ -151,7 +153,7 @@ class TableResourceWriterTest extends SparkTestSupport {
         val finalDf = session.read.table(table.name)
 
         assert(finalDf.count() == 1)
-        checkDataFramesEqual(finalDf, anotherUSAAuthor)
+        assertDataFrameEquals(finalDf, anotherUSAAuthor)
       }
 
       "overwrite all partitions if told so" in {
@@ -170,7 +172,7 @@ class TableResourceWriterTest extends SparkTestSupport {
         val finalDf = session.read.table(table.name)
 
         assert(finalDf.count() == 1)
-        checkDataFramesEqual(finalDf, anotherUSAAuthor)
+        assertDataFrameEquals(finalDf, anotherUSAAuthor)
       }
 
       "overwrite only matching partitions if parameter is set" in {
@@ -191,7 +193,7 @@ class TableResourceWriterTest extends SparkTestSupport {
         assert(finalDf.count() == 2)
 
         val expectedAuthors = dfFromAuthors(bradbury, wells)
-        checkDataFramesEqual(finalDf, expectedAuthors)
+        assertDataFrameEquals(finalDf, expectedAuthors)
       }
 
       "do not overwrite anything if save mode is different than overwrite" in {
@@ -212,7 +214,8 @@ class TableResourceWriterTest extends SparkTestSupport {
         val expectedAuthors = dfFromAuthors(hemingway, wells, bradbury)
 
         assert(finalDf.count() == 3)
-        checkDataFramesEqual(finalDf, expectedAuthors)
+        assertDataFrameEquals(finalDf.sort("birthDate"),
+                              expectedAuthors.sort("birthDate"))
       }
     }
 

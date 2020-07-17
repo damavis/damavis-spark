@@ -19,6 +19,21 @@ object DatePartitionFormatter {
     apply(cols)
   }
 
+  def standardHourly: DatePartitionFormatter = {
+    val cols = DatePartColumn("year", "yyyy") ::
+      DatePartColumn("month", "MM") ::
+      DatePartColumn("day", "dd") ::
+      DatePartColumn("hour", "H") ::
+      Nil
+
+    apply(cols)
+  }
+
+  def daily: DatePartitionFormatter = {
+    val cols = DatePartColumn("dt", "yyyy-MM-dd") :: Nil
+    apply(cols)
+  }
+
   def apply(definitions: Seq[DatePartColumn]): DatePartitionFormatter = {
     if (definitions.isEmpty)
       throw new IllegalArgumentException(

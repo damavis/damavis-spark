@@ -1,15 +1,12 @@
 package com.damavis.spark.database
 
-import com.damavis.spark.database.exceptions.{
-  DatabaseNotFoundException,
-  InvalidDatabaseNameException
-}
-import com.damavis.spark.utils.SparkTestSupport
+import com.damavis.spark.database.exceptions.{DatabaseNotFoundException, InvalidDatabaseNameException}
+import com.damavis.spark.utils.{SparkTestBase}
 import org.apache.spark.sql.functions._
 
 import scala.util.Try
 
-class DbManagerTest extends SparkTestSupport {
+class DbManagerTest extends SparkTestBase {
   "A DbManager" when {
     "accessed" should {
       "throw exception if asked for a database with invalid name" in {

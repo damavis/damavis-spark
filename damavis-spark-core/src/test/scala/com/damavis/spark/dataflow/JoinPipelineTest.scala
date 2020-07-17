@@ -1,12 +1,9 @@
 package com.damavis.spark.dataflow
 
 import com.damavis.spark.database.{Database, DbManager}
-import com.damavis.spark._
-import com.damavis.spark.resource.datasource.{
-  TableReaderBuilder,
-  TableWriterBuilder
-}
-import com.damavis.spark.utils.SparkTestSupport
+import com.damavis.spark.testdata._
+import com.damavis.spark.resource.datasource.{TableReaderBuilder, TableWriterBuilder}
+import com.damavis.spark.utils.{SparkTestBase}
 import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions._
@@ -15,7 +12,7 @@ import org.apache.spark.sql.types._
 import scala.collection.JavaConverters._
 import scala.language.postfixOps
 
-class JoinPipelineTest extends SparkTestSupport {
+class JoinPipelineTest extends SparkTestBase {
 
   implicit var db: Database = _
 
@@ -104,7 +101,7 @@ class JoinPipelineTest extends SparkTestSupport {
       )
 
       val expected = session.createDataFrame(expectedData, schema)
-      checkDataFramesEqual(generated, expected)
+      assertDataFrameEquals(generated, expected)
     }
   }
 }

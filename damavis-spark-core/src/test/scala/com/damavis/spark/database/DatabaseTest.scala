@@ -2,10 +2,10 @@ package com.damavis.spark.database
 
 import com.damavis.spark.database.exceptions.TableAccessException
 import com.damavis.spark.resource.Format
-import com.damavis.spark.utils.SparkTestSupport
+import com.damavis.spark.utils.SparkTestBase
 import org.apache.spark.sql.functions._
 
-class DatabaseTest extends SparkTestSupport {
+class DatabaseTest extends SparkTestBase {
 
   import session.implicits._
 
@@ -95,11 +95,15 @@ class DatabaseTest extends SparkTestSupport {
       val dummy = DummyTable("test", "dummy_going_real")
       val schema = (1 :: 2 :: 3 :: 4 :: Nil).toDF("number").schema
 
+      // Holden Karau's test suite do not respect "spark.sql.warehouse.dir", so get it from session
+      val warehouseDir =
+        spark.sqlContext.getAllConfs.get("spark.sql.warehouse.dir")
+
       val obtained = db.addTableIfNotExists(dummy, schema, Format.Parquet, Nil)
       val expected = RealTable(
         "test",
         "dummy_going_real",
-        "hdfs://localhost:8020/sparktest-DatabaseTest-warehouse/test.db/dummy_going_real",
+        s"hdfs://localhost:8020${warehouseDir.get}/test.db/dummy_going_real",
         Format.Parquet,
         managed = true,
         Column("number", "int", partitioned = false, nullable = true) :: Nil

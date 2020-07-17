@@ -5,4 +5,7 @@ object Format extends Enumeration {
 
   val Avro = Value("avro")
   val Parquet = Value("parquet")
+  val Json = Value("json")
+  val Csv = Value("csv")
+  val Orc = Value("orc")
 }
