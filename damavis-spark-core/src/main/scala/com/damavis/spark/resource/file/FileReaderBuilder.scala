@@ -55,12 +55,6 @@ class FileReaderBuilder(params: FileReaderParameters)(
     new FileReaderBuilder(newParams)
   }
 
-  def betweenDates(from: Timestamp, to: Timestamp): FileReaderBuilder = {
-    betweenDates(
-      LocalDateTime.ofInstant(from.toInstant, ZoneId.systemDefault()),
-      LocalDateTime.ofInstant(to.toInstant, ZoneId.systemDefault()))
-  }
-
   def partitionDateFormat(
       formatter: DatePartitionFormatter): FileReaderBuilder = {
     val newParams = params.copy(partitionFormatter = formatter)
