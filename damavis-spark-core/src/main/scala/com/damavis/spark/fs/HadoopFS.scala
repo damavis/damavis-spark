@@ -11,8 +11,8 @@ object HadoopFS {
 
 class HadoopFS(root: Path)(implicit spark: SparkSession) extends FileSystem {
 
-  protected val hadoopConf: Configuration =
-    spark.sparkContext.hadoopConfiguration
+  protected def hadoopConf: Configuration =
+    spark.sessionState.newHadoopConf()
 
   override def pathExists(path: String): Boolean = {
     val hdfsPath = new Path(s"$root/$path")

@@ -1,6 +1,7 @@
 package com.damavis.spark.resource.file
 
-import java.time.{LocalDate, LocalDateTime, LocalTime}
+import java.sql.Timestamp
+import java.time.{LocalDate, LocalDateTime, LocalTime, ZoneId}
 
 import com.damavis.spark.resource.Format.Format
 import com.damavis.spark.resource.partitioning.DatePartitionFormatter
@@ -30,7 +31,8 @@ class FileReaderBuilder(params: FileReaderParameters)(
     new FileReader(params)
   }
 
-  def partitioning(partitionFormatter: DatePartitionFormatter): FileReaderBuilder = {
+  def partitioning(
+      partitionFormatter: DatePartitionFormatter): FileReaderBuilder = {
     val newParams = params.copy(partitionFormatter = partitionFormatter)
     new FileReaderBuilder(newParams)
   }
@@ -51,6 +53,12 @@ class FileReaderBuilder(params: FileReaderParameters)(
       params.copy(from = Some(from), to = Some(to))
 
     new FileReaderBuilder(newParams)
+  }
+
+  def betweenDates(from: Timestamp, to: Timestamp): FileReaderBuilder = {
+    betweenDates(
+      LocalDateTime.ofInstant(from.toInstant, ZoneId.systemDefault()),
+      LocalDateTime.ofInstant(to.toInstant, ZoneId.systemDefault()))
   }
 
   def partitionDateFormat(
