@@ -5,7 +5,18 @@ import com.damavis.spark.database.{DummyTable, Table}
 import com.damavis.spark.resource.{ReaderBuilder, ResourceReader}
 import org.apache.spark.sql.SparkSession
 
+import scala.util.{Failure, Success, Try}
+
 object TableReaderBuilder {
+
+  def apply(tryTable: Try[Table])(
+      implicit spark: SparkSession): TableReaderBuilder = {
+    tryTable match {
+      case Success(table)     => apply(table)
+      case Failure(exception) => throw exception
+    }
+  }
+
   def apply(table: Table)(implicit spark: SparkSession): TableReaderBuilder = {
     table match {
       case _: DummyTable =>

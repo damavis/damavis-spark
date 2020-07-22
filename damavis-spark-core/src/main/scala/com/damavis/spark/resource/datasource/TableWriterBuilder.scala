@@ -8,7 +8,18 @@ import com.damavis.spark.resource.partitioning.DatePartitionFormatter
 import com.damavis.spark.resource.{ResourceWriter, WriterBuilder}
 import org.apache.spark.sql.{SaveMode, SparkSession}
 
+import scala.util.{Failure, Success, Try}
+
 object TableWriterBuilder {
+
+  def apply(tryTable: Try[Table])(implicit spark: SparkSession,
+                                  db: Database): BasicTableWriterBuilder = {
+    tryTable match {
+      case Success(table)     => apply(table)
+      case Failure(exception) => throw exception
+    }
+  }
+
   def apply(table: Table)(implicit spark: SparkSession,
                           db: Database): BasicTableWriterBuilder = {
     val params = TableWriterParameters()
