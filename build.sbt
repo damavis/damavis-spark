@@ -19,6 +19,7 @@ val testDependencies = Seq(
   "com.holdenkarau" %% "spark-testing-base" % s"${sparkTestVersion}_0.14.0" % Test
 )
 
+import xerial.sbt.Sonatype._
 val settings = Seq(
   organization := "com.damavis",
   version := "0.1.0-SNAPSHOT",
@@ -30,7 +31,26 @@ val settings = Seq(
   envVars in Test := Map(
     "MASTER" -> "local[*]"
   ),
-  test in assembly := {}
+  test in assembly := {},
+  // Sonatype
+  sonatypeProfileName := "com.damavis",
+  sonatypeProjectHosting := Some(
+    GitHubHosting("damavis", "damavis-spark", "info@damavis.com")),
+  publishMavenStyle := true,
+  licenses := Seq(
+    "APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
+  developers := List(
+    Developer(id = "piffall",
+              name = "Cristòfol Torrens",
+              email = "piffall@gmail.com",
+              url = url("http://piffall.com")),
+    Developer(id = "priera",
+              name = "Pedro Riera",
+              email = "pedro.riera at damavis dot com",
+              url = url("http://github.com/priera")),
+  ),
+  publishTo := sonatypePublishToBundle.value,
+  credentials += Publish.credentials
 )
 
 lazy val root = (project in file("."))
@@ -46,3 +66,11 @@ lazy val core = (project in file("damavis-spark-core"))
   .settings(
     crossScalaVersions := supportedScalaVersions,
   )
+
+lazy val databricks = (project in file("damavis-spark-databricks"))
+  .settings(settings)
+  .settings(name := "damavis-spark-databricks")
+  .settings(
+    crossScalaVersions := supportedScalaVersions,
+  )
+  .dependsOn(core)
