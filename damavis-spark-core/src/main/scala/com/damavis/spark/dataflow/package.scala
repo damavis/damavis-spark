@@ -8,15 +8,15 @@ import scala.language.implicitConversions
 package object dataflow {
 
   object implicits {
-    implicit def defaultSocketOfStage(stage: PipelineStage): StageSocket =
+    implicit def defaultSocketOfStage(stage: DataFlowStage): StageSocket =
       stage.left
 
-    implicit def readerToSource(resource: ResourceReader): PipelineSource = {
+    implicit def readerToSource(resource: ResourceReader): DataFlowSource = {
       val processor = new SourceProcessor {
         override def computeImpl(): DataFrame = resource.read()
       }
 
-      new PipelineSource(processor)
+      new DataFlowSource(processor)
     }
 
     implicit def writerToTarget(resource: ResourceWriter): StageSocket = {
@@ -28,7 +28,7 @@ package object dataflow {
         }
       }
 
-      val target = new PipelineTarget(processor)
+      val target = new DataFlowTarget(processor)
 
       target.left
     }

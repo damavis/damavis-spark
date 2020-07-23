@@ -2,7 +2,7 @@ package com.damavis.spark.dataflow
 
 import org.apache.spark.sql.DataFrame
 
-class StageSocket(val stage: PipelineStage) {
+class StageSocket(val stage: DataFlowStage) {
   private var data: DataFrame = _
 
   def get: DataFrame = data

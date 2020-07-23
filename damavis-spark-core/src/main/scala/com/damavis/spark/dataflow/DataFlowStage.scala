@@ -1,14 +1,14 @@
 package com.damavis.spark.dataflow
 
-object PipelineStage {
-  def apply(processor: Processor): PipelineStage =
-    new PipelineStage(processor)
+object DataFlowStage {
+  def apply(processor: Processor): DataFlowStage =
+    new DataFlowStage(processor)
 }
 
-class PipelineStage(private val processor: Processor) {
+class DataFlowStage(private val processor: Processor) {
 
-  private var next: PipelineStage = NoStage
-  private var dependsOn: Seq[PipelineStage] = Nil
+  private var next: DataFlowStage = NoStage
+  private var dependsOn: Seq[DataFlowStage] = Nil
   private var _toRun: Boolean = true
 
   protected val sockets: SocketSet =
@@ -20,7 +20,7 @@ class PipelineStage(private val processor: Processor) {
   def left: StageSocket = sockets.left
   def right: StageSocket = sockets.right
 
-  protected def addDependency(stage: PipelineStage): Unit = {
+  protected def addDependency(stage: DataFlowStage): Unit = {
     dependsOn = stage +: dependsOn
   }
 
@@ -39,7 +39,7 @@ class PipelineStage(private val processor: Processor) {
   }
 
   def ->(socket: StageSocket)(
-      implicit definition: PipelineDefinition): PipelineStage = {
+      implicit definition: DataFlowDefinition): DataFlowStage = {
     //TODO: disallow assignment to stages already connected
 
     if (this == socket.stage)

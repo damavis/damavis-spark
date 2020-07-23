@@ -8,12 +8,12 @@ package object utils {
 
   object implicits {
 
-    implicit def sourceFromDf(df: DataFrame): PipelineSource = {
+    implicit def sourceFromDf(df: DataFrame): DataFlowSource = {
       val processor = new SourceProcessor {
         override def computeImpl(): DataFrame = df
       }
 
-      new PipelineSource(processor)
+      new DataFlowSource(processor)
     }
   }
 
