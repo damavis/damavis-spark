@@ -7,6 +7,7 @@ import com.damavis.spark.resource.Format.Format
 import com.damavis.spark.resource.partitioning.DatePartitionFormatter
 import com.damavis.spark.resource.{ReaderBuilder, ResourceReader}
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.types.StructType
 
 object FileReaderBuilder {
   def apply(format: Format, path: String)(
@@ -39,6 +40,11 @@ class FileReaderBuilder(params: FileReaderParameters)(
 
   def options(options: Map[String, String]): FileReaderBuilder = {
     val newParams = params.copy(options = options)
+    new FileReaderBuilder(newParams)
+  }
+
+  def schema(schema: StructType): FileReaderBuilder = {
+    val newParams = params.copy(schema = Option(schema))
     new FileReaderBuilder(newParams)
   }
 
