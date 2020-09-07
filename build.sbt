@@ -22,7 +22,7 @@ val testDependencies = Seq(
 import xerial.sbt.Sonatype._
 val settings = Seq(
   organization := "com.damavis",
-  version := "0.1.0",
+  version := "0.1.1",
   isSnapshot := version.value.endsWith("SNAPSHOT"),
   scalaVersion := "2.12.11",
   libraryDependencies ++= dependencies ++ testDependencies,
