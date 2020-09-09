@@ -2,7 +2,9 @@ package com.damavis.spark.resource.datasource
 
 import com.damavis.spark.database.exceptions.TableAccessException
 import com.damavis.spark.database.{Database, Table}
-import com.damavis.spark.resource.ResourceWriter
+import com.damavis.spark.resource.{Format, ResourceWriter}
+import io.delta.tables.DeltaTable
+import org.apache.spark.sql.functions.{col, lit}
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 
 class TableResourceWriter(spark: SparkSession,
@@ -22,34 +24,85 @@ class TableResourceWriter(spark: SparkSession,
       db.addTableIfNotExists(actualTable, schema, format, partitionedBy)
   }
 
+  private def mergeExpression(partitions: Seq[String]): String = {
+    partitions
+      .zip(partitions)
+      .map(tuple => s"target.${tuple._1} = update.${tuple._2}")
+      .mkString(" AND ")
+  }
+
   override def write(data: DataFrame): Unit = {
     updateCatalogBeforeWrite(data)
 
-    val previousOverwriteConf =
-      spark.conf.get("spark.sql.sources.partitionOverwriteMode")
+    if (params.storageFormat == Format.Delta) {
+      if (params.partitionedBy.isDefined) {
+        params.overwriteBehavior match {
+          case OverwritePartitionBehavior.OVERWRITE_ALL =>
+            data.write
+              .mode(params.saveMode)
+              .insertInto(actualTable.name)
+          case OverwritePartitionBehavior.OVERWRITE_MATCHING =>
+            val delta = DeltaTable.forName(actualTable.name)
 
-    if (params.saveMode == SaveMode.Overwrite && params.partitionedBy.isDefined) {
-      val overwriteMode = params.overwriteBehavior match {
-        case OverwritePartitionBehavior.OVERWRITE_ALL      => "static"
-        case OverwritePartitionBehavior.OVERWRITE_MATCHING => "dynamic"
+            // Delete the whole partition
+            val toDelete =
+              data.select(params.partitionedBy.get.map(col): _*).distinct()
+            val columns = toDelete.columns
+            val toDeleteExpr = toDelete
+              .collect()
+              .map(_.toSeq)
+              .map(v => columns.zip(v))
+              .map(l => l.map(e => col(e._1) === lit(e._2)).reduce(_ && _))
+              .reduce(_ || _)
+
+            delta
+              .as("target")
+              .delete(toDeleteExpr)
+
+            // And insert it again
+            data.write.mode(SaveMode.Append).insertInto(actualTable.name)
+            delta.vacuum()
+        }
+      } else {
+        params.overwriteBehavior match {
+          case OverwritePartitionBehavior.OVERWRITE_ALL =>
+            data.write
+              .mode(params.saveMode)
+              .insertInto(actualTable.name)
+          case OverwritePartitionBehavior.OVERWRITE_MATCHING =>
+            throw new TableAccessException(
+              "Cannot overwrite dynamically delta tables")
+        }
+      }
+    } else {
+
+      val previousOverwriteConf =
+        spark.conf.get("spark.sql.sources.partitionOverwriteMode")
+
+      if (params.saveMode == SaveMode.Overwrite && params.partitionedBy.isDefined) {
+        val overwriteMode = params.overwriteBehavior match {
+          case OverwritePartitionBehavior.OVERWRITE_ALL      => "static"
+          case OverwritePartitionBehavior.OVERWRITE_MATCHING => "dynamic"
+        }
+
+        spark.conf
+          .set("spark.sql.sources.partitionOverwriteMode", overwriteMode)
       }
 
-      spark.conf.set("spark.sql.sources.partitionOverwriteMode", overwriteMode)
+      try {
+        checkDataFrameColumns(data)
+
+        data.write
+          .mode(params.saveMode)
+          .insertInto(actualTable.name)
+      } catch {
+        case e: Throwable => throw e
+      } finally {
+        spark.conf
+          .set("spark.sql.sources.partitionOverwriteMode",
+               previousOverwriteConf)
+      }
     }
-
-    try {
-      checkDataFrameColumns(data)
-
-      data.write
-        .mode(params.saveMode)
-        .insertInto(actualTable.name)
-    } catch {
-      case e: Throwable => throw e
-    } finally {
-      spark.conf
-        .set("spark.sql.sources.partitionOverwriteMode", previousOverwriteConf)
-    }
-
   }
 
   private def checkDataFrameColumns(data: DataFrame): Unit = {

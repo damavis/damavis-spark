@@ -17,9 +17,9 @@ class SparkAppTest extends FlatSpec with SparkApp {
     // URI of the hdfs server
     "spark.hadoop.fs.default.name" -> HDFSCluster.uri,
     // Hive metastore configuration
-    "spark.sql.catalogImplementation" -> "hive",
-    "spark.hadoop.javax.jdo.option.ConnectionDriverName" -> "org.apache.derby.jdbc.EmbeddedDriver",
-    "spark.hadoop.javax.jdo.option.ConnectionURL" -> "jdbc:derby:memory:myInMemDB;create=true"
+    "spark.sql.extensions" -> "io.delta.sql.DeltaSparkSessionExtension",
+    "spark.sql.catalog.spark_catalog" -> "org.apache.spark.sql.delta.catalog.DeltaCatalog",
+    "spark.sql.catalogImplementation" -> "hive"
   )
 
   "An SparkApp" should

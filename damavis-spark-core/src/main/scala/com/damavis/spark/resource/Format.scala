@@ -8,4 +8,5 @@ object Format extends Enumeration {
   val Json = Value("json")
   val Csv = Value("csv")
   val Orc = Value("orc")
+  val Delta = Value("delta")
 }
