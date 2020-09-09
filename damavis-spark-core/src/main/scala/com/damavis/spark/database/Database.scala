@@ -4,9 +4,11 @@ import com.damavis.spark.database.exceptions._
 import com.damavis.spark.fs.FileSystem
 import com.damavis.spark.resource.Format
 import com.damavis.spark.resource.Format.Format
-import org.apache.spark.sql.{DataFrame, SparkSession}
-import org.apache.spark.sql.functions._
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.catalog.{Catalog, Database => SparkDatabase}
+import org.apache.spark.sql.catalyst.TableIdentifier
+import org.apache.spark.sql.catalyst.catalog.CatalogTable
+import org.apache.spark.sql.delta.DeltaTableUtils
 import org.apache.spark.sql.types.StructType
 import org.slf4j.LoggerFactory
 
@@ -113,36 +115,48 @@ class Database(
   }
 
   private def innerGetTable(name: String): Table = {
-    val tableMeta = spark.sql(s"DESCRIBE TABLE FORMATTED $name")
 
-    val requiredFields = "Location" :: "Provider" :: "Type" :: Nil
-    val fields = tableMeta
-      .filter(col("col_name").isInCollection(requiredFields))
-      .orderBy(col("col_name") asc)
-      .select("data_type")
-      .collect()
-
-    val path = fields(0).getString(0)
-    val format = Format.withName(fields(1).getString(0).toLowerCase)
-    val managed = fields(2).getString(0) == "MANAGED"
+    val tableMeta = getMetadata(name)
+    val path = tableMeta.storage.locationUri.get.toURL.toString
+    val format = Format.withName(tableMeta.provider.get.toLowerCase)
+    val managed = tableMeta.tableType.name == "MANAGED"
 
     val columns = extractColumns(name)
 
-    RealTable(db.name, name, path, format, managed, columns)
+    RealTable(this.db.name, name, path, format, managed, columns)
+  }
+
+  private def getMetadata(name: String): CatalogTable = {
+
+    val db = if (name.contains(".")) Option(name.split(name)(0)) else None
+    val table = if (name.contains(".")) name.split(".")(1) else name
+
+    val catalogTable =
+      spark.sessionState.catalog.getTableMetadata(TableIdentifier(table, db))
+
+    val combined = {
+      if (catalogTable.provider == Option("delta")) {
+        DeltaTableUtils.combineWithCatalogMetadata(spark, catalogTable)
+      } else {
+        catalogTable
+      }
+    }
+    combined
   }
 
   private def extractColumns(name: String): Seq[Column] = {
-    val columnsDf = catalog
-      .listColumns(name)
-      .select("name", "dataType", "isPartition", "nullable")
-      .collect()
 
-    columnsDf.map(
-      row =>
-        Column(row.getString(0),
-               row.getString(1),
-               row.getBoolean(2),
-               row.getBoolean(3)))
+    val metadata = getMetadata(name)
+    val partitions = metadata.partitionColumnNames
+
+    val columns = metadata.schema.map(field => {
+      Column(field.name,
+             field.dataType.simpleString,
+             partitions.contains(field.name),
+             field.nullable)
+
+    })
+    columns
   }
 
   private def parseTableName(name: String): (String, String) =
@@ -179,9 +193,9 @@ class Database(
      * So, if partitions are defined, we use a "traditional" (raw SQL) approach. Hopefully, this won't be necessary in
      * the future
      */
-    if (partitionColumns.isEmpty)
+    if (partitionColumns.isEmpty) {
       catalog.createTable(name, format.toString, schema, Map[String, String]())
-    else
+    } else
       rawSQLCreateTable(name, format, schema, partitionColumns: _*)
   }
 

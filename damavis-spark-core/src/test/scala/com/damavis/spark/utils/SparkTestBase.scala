@@ -25,17 +25,18 @@ class SparkTestBase
   lazy val root: String = s"${HDFSCluster.uri}/$name"
   lazy implicit val session: SparkSession = spark
 
+  System.setSecurityManager(null) // Required hack
+
   override def conf: SparkConf = {
     new SparkConf()
       .setAppName(name)
       .setMaster("local[*]")
       .set("spark.sql.catalogImplementation", "hive")
+      .set("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
+      .set("spark.sql.catalog.spark_catalog",
+           "org.apache.spark.sql.delta.catalog.DeltaCatalog")
       .set("spark.hadoop.fs.default.name", HDFSCluster.uri)
       .set("spark.sql.warehouse.dir", warehouseConf) // Ignored by Holden Karau
-      .set("spark.hadoop.javax.jdo.option.ConnectionDriverName",
-           "org.apache.derby.jdbc.EmbeddedDriver")
-      .set("spark.hadoop.javax.jdo.option.ConnectionURL",
-           "jdbc:derby:memory:myInMemDB;create=true")
   }
 
 }

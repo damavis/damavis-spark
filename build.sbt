@@ -6,10 +6,11 @@ val sparkVersion = "3.0.0"
 val sparkTestVersion = "2.4.5"
 
 val dependencies = Seq(
-  "org.apache.spark" %% "spark-core" % sparkVersion % "provided",
-  "org.apache.spark" %% "spark-sql" % sparkVersion % "provided",
-  "org.apache.spark" %% "spark-hive" % sparkVersion % "provided",
-  "org.apache.spark" %% "spark-avro" % sparkVersion % "provided",
+  "org.apache.spark" %% "spark-core" % sparkVersion % Provided,
+  "org.apache.spark" %% "spark-sql" % sparkVersion % Provided,
+  "org.apache.spark" %% "spark-hive" % sparkVersion % Provided,
+  "org.apache.spark" %% "spark-avro" % sparkVersion % Provided,
+  "io.delta" %% "delta-core" % "0.7.0" % Provided,
   "com.typesafe" % "config" % "1.3.2"
 )
 
@@ -22,7 +23,7 @@ val testDependencies = Seq(
 import xerial.sbt.Sonatype._
 val settings = Seq(
   organization := "com.damavis",
-  version := "0.1.0-SNAPSHOT",
+  version := "0.2.0-SNAPSHOT",
   isSnapshot := version.value.endsWith("SNAPSHOT"),
   scalaVersion := "2.12.11",
   libraryDependencies ++= dependencies ++ testDependencies,
