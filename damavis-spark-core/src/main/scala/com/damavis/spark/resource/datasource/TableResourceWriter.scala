@@ -42,7 +42,7 @@ class TableResourceWriter(spark: SparkSession,
               .mode(params.saveMode)
               .insertInto(actualTable.name)
           case OverwritePartitionBehavior.OVERWRITE_MATCHING =>
-            val delta = DeltaTable.forName(actualTable.name)
+            val delta = DeltaTable.forName(s"${db.name}.${actualTable.name}")
 
             // Delete the whole partition
             val toDelete =
@@ -53,15 +53,18 @@ class TableResourceWriter(spark: SparkSession,
               .map(_.toSeq)
               .map(v => columns.zip(v))
               .map(l => l.map(e => col(e._1) === lit(e._2)).reduce(_ && _))
-              .reduce(_ || _)
+              .reduceOption(_ || _)
 
-            delta
-              .as("target")
-              .delete(toDeleteExpr)
+            toDeleteExpr match {
+              case Some(matching) =>
+                delta
+                  .as("target")
+                  .delete(matching)
+              case None => // Do nothing
+            }
 
             // And insert it again
             data.write.mode(SaveMode.Append).insertInto(actualTable.name)
-            delta.vacuum()
         }
       } else {
         params.overwriteBehavior match {
