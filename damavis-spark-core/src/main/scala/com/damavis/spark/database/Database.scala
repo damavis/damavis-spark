@@ -4,16 +4,17 @@ import com.damavis.spark.database.exceptions._
 import com.damavis.spark.fs.FileSystem
 import com.damavis.spark.resource.Format
 import com.damavis.spark.resource.Format.Format
+import org.apache.hadoop.fs.Path
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.catalog.{Catalog, Database => SparkDatabase}
 import org.apache.spark.sql.catalyst.TableIdentifier
 import org.apache.spark.sql.catalyst.catalog.CatalogTable
-import org.apache.spark.sql.delta.DeltaTableUtils
+import org.apache.spark.sql.delta.{DeltaLog, DeltaTableUtils}
 import org.apache.spark.sql.types.StructType
 import org.slf4j.LoggerFactory
 
 import scala.language.postfixOps
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 class Database(
     db: SparkDatabase,
@@ -119,10 +120,13 @@ class Database(
     val tableMeta = getMetadata(name)
     val path = tableMeta.storage.locationUri.get.toURL.toString
     val format = Format.withName(tableMeta.provider.get.toLowerCase)
-    val managed = tableMeta.tableType.name == "MANAGED"
+    val managed = tableMeta.tableType.name.startsWith("MANAGED")
 
     val columns = extractColumns(name)
 
+    logger.info(
+      s"Inner GET TABLE ${name}, path: ${path}, format: ${format.toString}, managed: ${managed.toString}, columns: ${columns
+        .toString()}")
     RealTable(this.db.name, name, path, format, managed, columns)
   }
 
@@ -134,14 +138,36 @@ class Database(
     val catalogTable =
       spark.sessionState.catalog.getTableMetadata(TableIdentifier(table, db))
 
-    val combined = {
+    logger.info(
+      s"Table partitioned by ${catalogTable.partitionColumnNames.mkString("[", ",", "]")}")
+    catalogTable.schema.printTreeString()
+
+    // This block of code is necessary because Databricks runtime do not
+    // provide DeltaTableUtils.
+    try {
+      Class.forName("org.apache.spark.sql.delta.DeltaTableUtils")
       if (catalogTable.provider == Option("delta")) {
         DeltaTableUtils.combineWithCatalogMetadata(spark, catalogTable)
       } else {
         catalogTable
       }
+    } catch {
+      case e: ClassNotFoundException =>
+        logger.error("Could not combine catalog and delta meta, Cause: ", e)
+        logger.warn("Keeping catalog only data")
+        catalogTable
+      case e: NoClassDefFoundError =>
+        logger.error("Could not combine catalog and delta meta, Cause: ", e)
+        logger.warn("Keeping catalog only data")
+        catalogTable
+      case ue: Throwable =>
+        logger.error(
+          "Could not combine catalog and delta meta, Unknown Cause: ",
+          ue)
+        logger.warn("Keeping catalog only data")
+        catalogTable
     }
-    combined
+
   }
 
   private def extractColumns(name: String): Seq[Column] = {
@@ -209,6 +235,7 @@ class Database(
                  |PARTITIONED BY (${partitionBy.mkString(",")})
                  |""".stripMargin
     spark.sql(ddl)
+    logger.info(s"Table ${name} created.")
   }
 
 }
