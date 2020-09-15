@@ -1,6 +1,6 @@
 package com.damavis.spark.dataflow
 
-class Pipeline(definition: PipelineDefinition) {
+class DataFlow(definition: DataFlowDefinition) {
   def run(): Unit = {
     for (source <- definition.sources)
       source.compute()

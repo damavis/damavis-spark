@@ -2,7 +2,10 @@ package com.damavis.spark.dataflow
 
 import com.damavis.spark.database.{Database, DbManager}
 import com.damavis.spark.testdata._
-import com.damavis.spark.resource.datasource.{TableReaderBuilder, TableWriterBuilder}
+import com.damavis.spark.resource.datasource.{
+  TableReaderBuilder,
+  TableWriterBuilder
+}
 import com.damavis.spark.utils.{SparkTestBase}
 import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.expressions.Window
@@ -12,7 +15,7 @@ import org.apache.spark.sql.types._
 import scala.collection.JavaConverters._
 import scala.language.postfixOps
 
-class JoinPipelineTest extends SparkTestBase {
+class JoinDataFlowTest extends SparkTestBase {
 
   implicit var db: Database = _
 
@@ -72,12 +75,12 @@ class JoinPipelineTest extends SparkTestBase {
       val authorsReader = TableReaderBuilder(authorsTable).reader()
       val oldBookWriter = TableWriterBuilder(oldestBooksTable).writer()
 
-      val pipeline = PipelineBuilder.create {
-        implicit definition: PipelineDefinition =>
+      val pipeline = DataFlowBuilder.create {
+        implicit definition: DataFlowDefinition =>
           import implicits._
 
-          val joinStage = new PipelineStage(joinAuthorsProcessor)
-          val authorOldestBook = new PipelineStage(groupByProcessor)
+          val joinStage = new DataFlowStage(joinAuthorsProcessor)
+          val authorOldestBook = new DataFlowStage(groupByProcessor)
 
           authorsReader -> joinStage.left -> authorOldestBook -> oldBookWriter
           booksReader -> joinStage.right
