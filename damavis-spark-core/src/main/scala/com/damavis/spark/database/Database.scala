@@ -132,7 +132,7 @@ class Database(
 
   private def getMetadata(name: String): CatalogTable = {
 
-    val db = if (name.contains(".")) Option(name.split(name)(0)) else None
+    val db = if (name.contains(".")) Option(name.split(".")(0)) else None
     val table = if (name.contains(".")) name.split(".")(1) else name
 
     val catalogTable =
