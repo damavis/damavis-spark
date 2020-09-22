@@ -6,6 +6,7 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 
 class TableResourceReader(spark: SparkSession, table: Table)
     extends ResourceReader {
-  override def read(): DataFrame = spark.read.table(table.name)
-
+  override def read(): DataFrame =
+    spark.read
+      .table(s"${table.database}.${table.name}")
 }
