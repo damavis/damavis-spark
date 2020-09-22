@@ -52,10 +52,10 @@ class Database(
     Try {
       val actualName = parseAndCheckTableName(name)._2
 
-      if (catalog.tableExists(actualName))
-        innerGetTable(actualName)
+      if (catalog.tableExists(name))
+        innerGetTable(name)
       else
-        DummyTable(db.name, name)
+        DummyTable(db.name, actualName)
     }
   }
 
@@ -73,8 +73,8 @@ class Database(
         throw new TableAccessException(msg)
       }
 
-      if (catalog.tableExists(actualName)) {
-        val tableMeta = innerGetTable(actualName)
+      if (catalog.tableExists(name)) {
+        val tableMeta = innerGetTable(name)
         validateExternalTable(tableMeta, actualName, path, format)
 
         tableMeta
@@ -124,10 +124,12 @@ class Database(
 
     val columns = extractColumns(name)
 
+    val dbPath = parseAndCheckTableName(name)
+    val actualName = dbPath._2
     logger.info(
-      s"Inner GET TABLE ${name}, path: ${path}, format: ${format.toString}, managed: ${managed.toString}, columns: ${columns
+      s"Inner GET TABLE ${actualName}, path: ${path}, format: ${format.toString}, managed: ${managed.toString}, columns: ${columns
         .toString()}")
-    RealTable(this.db.name, name, path, format, managed, columns)
+    RealTable(this.db.name, actualName, path, format, managed, columns)
   }
 
   private def getMetadata(name: String): CatalogTable = {
