@@ -2,7 +2,7 @@ package com.damavis.spark.dataflow
 
 import org.scalatest.WordSpec
 
-class PipelineBuilderTest extends WordSpec {
+class DataFlowBuilderTest extends WordSpec {
 
   /*TODO
  * - empty pipelines are not valid

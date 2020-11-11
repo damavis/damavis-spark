@@ -5,7 +5,7 @@ import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.apache.spark.sql.DataFrame
 import org.scalatest.WordSpec
 
-class LinealPipelineTest extends WordSpec with DataFrameSuiteBase {
+class LinealDataFlowTest extends WordSpec with DataFrameSuiteBase {
 
   import spark.implicits._
   import utils.implicits._
@@ -13,7 +13,7 @@ class LinealPipelineTest extends WordSpec with DataFrameSuiteBase {
   "A lineal pipeline" should {
     "deliver dataFrames across stages" in {
 
-      val source: PipelineSource = (Person("Frollo", 50) :: Nil).toDF
+      val source: DataFlowSource = (Person("Frollo", 50) :: Nil).toDF
 
       val targetProcessor = new LinealProcessor {
         override def computeImpl(data: DataFrame): DataFrame = {
@@ -25,9 +25,9 @@ class LinealPipelineTest extends WordSpec with DataFrameSuiteBase {
         }
       }
 
-      val target = new PipelineTarget(targetProcessor)
+      val target = new DataFlowTarget(targetProcessor)
 
-      val pipeline = PipelineBuilder.create { implicit definition =>
+      val pipeline = DataFlowBuilder.create { implicit definition =>
         import implicits._
 
         source -> target

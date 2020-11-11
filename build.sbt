@@ -58,8 +58,7 @@ lazy val root = (project in file("."))
   .settings(name := "damavis-spark")
   .settings(settings)
   .settings(publishArtifact := false)
-  .aggregate(core)
-  .dependsOn(core)
+  .aggregate(core, azure, snowflake)
 
 lazy val core = (project in file("damavis-spark-core"))
   .settings(settings)
@@ -68,10 +67,21 @@ lazy val core = (project in file("damavis-spark-core"))
     crossScalaVersions := supportedScalaVersions,
   )
 
-lazy val databricks = (project in file("damavis-spark-databricks"))
+lazy val azure = (project in file("damavis-spark-azure"))
   .settings(settings)
-  .settings(name := "damavis-spark-databricks")
+  .settings(name := "damavis-spark-azure")
   .settings(
     crossScalaVersions := supportedScalaVersions,
+  )
+  .dependsOn(core)
+
+lazy val snowflake = (project in file("damavis-spark-snowflake"))
+  .settings(settings)
+  .settings(name := "damavis-spark-snowflake")
+  .settings(
+    crossScalaVersions := supportedScalaVersions,
+    libraryDependencies ++= Seq(
+      "net.snowflake" %% "spark-snowflake" % "2.8.2-spark_3.0"
+    )
   )
   .dependsOn(core)
