@@ -30,7 +30,7 @@ class SnowflakeWriterMergerTest extends WordSpec with DataFrameSuiteBase {
                                      db,
                                      "PUBLIC",
                                      "MY_TEST_TABLE")(spark)
-        val merger = SnowflakeWriterMerger(writer, data, Seq("dt"))(spark)
+        val merger = SnowflakeWriterMerger(writer, Seq("dt"))(spark)
         merger.write(data)
       }
     }
