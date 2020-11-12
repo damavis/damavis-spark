@@ -17,7 +17,7 @@ case class SnowflakeReader(
   val settings = (table, query) match {
     case (Some(tableName), None) => ("dbtable", tableName)
     case (None, Some(queryBody)) => ("query", queryBody)
-    case (None, None) =>
+    case (Some(_), Some(_)) =>
       throw new IllegalArgumentException(
         "SnowflakeReader cannot read table and query.")
   }

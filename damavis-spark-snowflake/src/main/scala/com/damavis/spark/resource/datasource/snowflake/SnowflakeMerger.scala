@@ -41,7 +41,6 @@ case class SnowflakeMerger(
         |""".stripMargin
 
     Utils.runQuery(sfOptions, deleteQuery)
-    println("deleted")
   }
 
 }
