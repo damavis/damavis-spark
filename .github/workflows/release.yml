@@ -22,13 +22,13 @@ jobs:
         echo "$GPG_SIGNING_KEY" > ~/.gnupg/private.key
         gpg --import ~/.gnupg/private.key
         chmod 600 ~/.gnupg/*
-        gpg --list-secret
+        gpg --list-secret-keys
       env:
         GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
-    - name: Run tests
-      run: sbt test
     - name: Publish Signed
-      run: sbt publishSigned
+      run: |
+        gpg --list-secret-keys
+        sbt publishSigned
     - name: Release
       run: sbt sonatypeBundleRelease
       env:
