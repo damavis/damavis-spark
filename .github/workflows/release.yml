@@ -6,7 +6,7 @@ on:
     tags: v0.*
 
 jobs:
-  build:
+  release:
 
     runs-on: ubuntu-latest
 
