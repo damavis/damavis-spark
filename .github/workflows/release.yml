@@ -18,10 +18,11 @@ jobs:
     - name: Configure GPG Key
       run: |
         mkdir -p ~/.gnupg/
+        chmod 700 ~/.gnupg/
         echo "$GPG_SIGNING_KEY" > ~/.gnupg/private.key
         gpg --import ~/.gnupg/private.key
         chmod 600 ~/.gnupg/*
-        chmod 700 ~/.gnupg/
+        gpg --list-secret
       env:
         GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
     - name: Run tests
