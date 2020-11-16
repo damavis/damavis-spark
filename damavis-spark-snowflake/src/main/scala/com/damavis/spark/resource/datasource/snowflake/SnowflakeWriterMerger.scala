@@ -1,6 +1,7 @@
 package com.damavis.spark.resource.datasource.snowflake
 
 import com.damavis.spark.resource.ResourceWriter
+import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 
 case class SnowflakeWriterMerger(writer: SnowflakeWriter, columns: Seq[String])(
@@ -20,7 +21,10 @@ case class SnowflakeWriterMerger(writer: SnowflakeWriter, columns: Seq[String])(
   }
 
   private def merge(data: DataFrame): Unit = {
-    writer.copy(table = stagingTable, mode = SaveMode.Overwrite).write(data)
+    writer
+      .copy(table = stagingTable, mode = SaveMode.Overwrite)
+      .write(data.select(columns.map(col): _*).distinct())
+
     SnowflakeMerger(writer.account,
                     writer.user,
                     writer.password,
