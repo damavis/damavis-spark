@@ -73,8 +73,24 @@ class TableResourceWriter(spark: SparkSession,
               .mode(params.saveMode)
               .insertInto(actualTable.name)
           case OverwritePartitionBehavior.OVERWRITE_MATCHING =>
-            throw new TableAccessException(
-              "Cannot overwrite dynamically delta tables")
+            if (params.pk.isEmpty) {
+              throw new TableAccessException(
+                "Cannot overwrite dynamically delta tables without defining partitioning or a PrimaryKey")
+            }
+
+            val delta = DeltaTable.forName(s"${db.name}.${actualTable.name}")
+
+            // Delete matching.
+            val toDelete = data.select(params.pk.get.map(col): _*).distinct()
+            delta
+              .as("target")
+              .merge(toDelete.as("update"), mergeExpression(params.pk.get))
+              .whenMatched
+              .delete()
+              .execute()
+
+            // And insert
+            data.write.mode(SaveMode.Append).insertInto(actualTable.name)
         }
       }
     } else {

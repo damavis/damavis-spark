@@ -77,6 +77,12 @@ class BasicTableWriterBuilder(
     this
   }
 
+  def pk(pk: Seq[String]): BasicTableWriterBuilder = {
+    myParams = myParams.copy(pk = Option(pk))
+
+    this
+  }
+
 }
 
 class SealedTableWriterBuilder(
@@ -84,6 +90,7 @@ class SealedTableWriterBuilder(
     db: Database,
     params: TableWriterParameters)(implicit spark: SparkSession)
     extends BasicTableWriterBuilder(table, db, params) {
+
   override def withFormat(format: Format): BasicTableWriterBuilder = {
     if (table.format != format) {
       val msg =
