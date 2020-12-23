@@ -222,9 +222,20 @@ class Database(
      * the future
      */
     if (partitionColumns.isEmpty) {
-      catalog.createTable(name, format.toString, schema, Map[String, String]())
+      rawSQLCreateTable(name, format, schema)
     } else
       rawSQLCreateTable(name, format, schema, partitionColumns: _*)
+  }
+
+  private def rawSQLCreateTable(name: String,
+                                format: Format,
+                                schema: StructType): Unit = {
+    val ddl = s"""CREATE TABLE IF NOT EXISTS $name
+                 |(${schema.toDDL})
+                 |USING ${format.toString.toUpperCase}
+                 |""".stripMargin
+    spark.sql(ddl)
+    logger.info(s"Table ${name} created.")
   }
 
   private def rawSQLCreateTable(name: String,
