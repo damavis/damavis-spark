@@ -10,4 +10,4 @@ case class TableWriterParameters(partitionedBy: Option[Seq[String]] = None,
                                  saveMode: SaveMode = SaveMode.Overwrite,
                                  overwriteBehavior: OverwritePartitionBehavior =
                                    OVERWRITE_ALL,
-                                 pk: Option[String] = None)
+                                 pk: Option[Seq[String]] = None)

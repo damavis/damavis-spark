@@ -77,7 +77,7 @@ class BasicTableWriterBuilder(
     this
   }
 
-  def pk(pk: String): BasicTableWriterBuilder = {
+  def pk(pk: Seq[String]): BasicTableWriterBuilder = {
     myParams = myParams.copy(pk = Option(pk))
 
     this

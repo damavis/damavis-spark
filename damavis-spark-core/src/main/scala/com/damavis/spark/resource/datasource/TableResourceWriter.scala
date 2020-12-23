@@ -81,10 +81,10 @@ class TableResourceWriter(spark: SparkSession,
             val delta = DeltaTable.forName(s"${db.name}.${actualTable.name}")
 
             // Delete matching.
-            val toDelete = data.select(params.pk.get).distinct()
+            val toDelete = data.select(params.pk.get.map(col): _*).distinct()
             delta
               .as("target")
-              .merge(toDelete.as("update"), mergeExpression(Seq(params.pk.get)))
+              .merge(toDelete.as("update"), mergeExpression(params.pk.get))
               .whenMatched
               .delete()
               .execute()

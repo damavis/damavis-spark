@@ -37,7 +37,7 @@ class DeltaTableWriterBuilderTest extends SparkTestBase {
       val table2 = db.getTable("test2")
       val sink2 = TableWriterBuilder(table2)
         .withFormat(Format.Delta)
-        .pk("name")
+        .pk(Seq("name"))
         .overwritePartitionBehavior(
           OverwritePartitionBehavior.OVERWRITE_MATCHING)
         .writer()
