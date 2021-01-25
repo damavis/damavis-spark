@@ -236,6 +236,7 @@ class Database(
                  |""".stripMargin
     spark.sql(ddl)
     logger.info(s"Table ${name} created.")
+    logger.info(ddl)
   }
 
   private def rawSQLCreateTable(name: String,
@@ -249,6 +250,7 @@ class Database(
                  |""".stripMargin
     spark.sql(ddl)
     logger.info(s"Table ${name} created.")
+    logger.info(ddl)
   }
 
 }
