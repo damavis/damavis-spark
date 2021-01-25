@@ -234,9 +234,9 @@ class Database(
                  |(${schema.toDDL})
                  |USING ${format.toString.toUpperCase}
                  |""".stripMargin
+    logger.info(ddl)
     spark.sql(ddl)
     logger.info(s"Table ${name} created.")
-    logger.info(ddl)
   }
 
   private def rawSQLCreateTable(name: String,
@@ -248,9 +248,9 @@ class Database(
                  |USING ${format.toString.toUpperCase}
                  |PARTITIONED BY (${partitionBy.mkString(",")})
                  |""".stripMargin
+    logger.info(ddl)
     spark.sql(ddl)
     logger.info(s"Table ${name} created.")
-    logger.info(ddl)
   }
 
 }
