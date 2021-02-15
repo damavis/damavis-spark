@@ -1,6 +1,7 @@
 package com.damavis.spark.fs
 
 import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs
 import org.apache.hadoop.fs.Path
 import org.apache.spark.sql.SparkSession
 
@@ -17,7 +18,17 @@ class HadoopFS(root: Path)(implicit spark: SparkSession) extends FileSystem {
   override def pathExists(path: String): Boolean = {
     val hdfsPath = new Path(s"$root/$path")
 
-    val fs = hdfsPath.getFileSystem(hadoopConf)
-    fs.exists(hdfsPath)
+    root
+      .getFileSystem(hadoopConf)
+      .exists(hdfsPath)
   }
+
+  override def listSubdirectories(path: String): Seq[String] = {
+    root
+      .getFileSystem(hadoopConf)
+      .listStatus(root.suffix(path))
+      .filter(_.isDirectory)
+      .map(_.getPath.getName)
+  }
+
 }

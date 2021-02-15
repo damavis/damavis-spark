@@ -17,10 +17,25 @@ object DatePartitions {
 
 class DatePartitions(fs: FileSystem, pathGenerator: DatePartitionFormatter) {
   def generatePaths(from: LocalDateTime, to: LocalDateTime): Seq[String] = {
+    val existingPartitions: Seq[String] = fs.listSubdirectories("/")
+
     datesGen(from, to).par
       .map(pathGenerator.dateToPath)
-      .filter(fs.pathExists)
+      .filter(partitionExists(existingPartitions, _))
       .seq
+  }
+
+  private def partitionExists(existingPartitions: Seq[String],
+                              partition: String): Boolean = {
+    val firstPartitionChecked =
+      if (pathGenerator.columnNames.length > 1) { // Skip following test when only one partition is specified
+        val firstColumnValue = partition.substring(0, partition.indexOf('/'))
+        existingPartitions.contains(firstColumnValue)
+      } else {
+        true
+      }
+
+    if (firstPartitionChecked) fs.pathExists(partition) else false
   }
 
   private def datesGen(from: LocalDateTime,
