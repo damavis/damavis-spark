@@ -5,8 +5,6 @@ import java.time.LocalDateTime
 import com.damavis.spark.fs.{FileSystem, HadoopFS}
 import org.apache.spark.sql.SparkSession
 
-import scala.reflect.io.Path
-
 object DatePartitions {
   def apply(root: String, pathGenerator: DatePartitionFormatter)(
       implicit spark: SparkSession): DatePartitions = {
