@@ -7,8 +7,6 @@ import org.scalatest.WordSpec
 import java.time.LocalDateTime
 
 class DatePartitionsTest extends WordSpec with MockFactory {
-  // Use fs as stub for checking whats happening (filtering is going fine)
-
   "DatePartitions.generate" when {
     "dates are in the proper order" should {
       "return a proper list" in {
@@ -101,6 +99,22 @@ class DatePartitionsTest extends WordSpec with MockFactory {
           .generatePaths(from, to)
 
         assert(expected === generated)
+      }
+    }
+
+    "only a subset of possible partitions may exist" should {
+      "query filesystem a minimum number of times" in {
+        val from = LocalDateTime.of(2017, 1, 1, 0, 0)
+        val to = LocalDateTime.of(2021, 12, 31, 0, 0)
+
+        val fsMock = mock[FileSystem]
+        (fsMock.listSubdirectories _)
+          .expects(*)
+          .returning("year=2018" :: "year=2019" :: Nil)
+        (fsMock.pathExists _).expects(*).repeat(365 * 2)
+
+        DatePartitions(fsMock, DatePartitionFormatter.standard)
+          .generatePaths(from, to)
       }
     }
   }
