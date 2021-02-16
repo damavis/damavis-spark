@@ -37,6 +37,7 @@ package object testdata {
   val moreau: Book = Book("The Island of Doctor Moreau", 1896, wells.name)
   val oliverTwist: Book = Book("Oliver Twist", 1839, dickens.name)
   val expectations: Book = Book("Great expectations", 1861, dickens.name)
+  val martian: Book = Book("The Martian Chronicles", 1950, bradbury.name)
 
   val authorsSchema: StructType = StructType(
     StructField("name", StringType, nullable = true) ::
