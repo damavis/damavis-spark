@@ -1,7 +1,6 @@
 package com.damavis.spark.resource.file
 
-import java.sql.Timestamp
-import java.time.{LocalDate, LocalDateTime, LocalTime, ZoneId}
+import java.time.{LocalDate, LocalDateTime, LocalTime}
 
 import com.damavis.spark.resource.Format.Format
 import com.damavis.spark.resource.partitioning.DatePartitionFormatter

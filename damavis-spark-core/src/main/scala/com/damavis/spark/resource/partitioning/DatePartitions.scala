@@ -1,10 +1,8 @@
 package com.damavis.spark.resource.partitioning
 
-import java.time.{Duration, LocalDateTime}
+import java.time.LocalDateTime
 import com.damavis.spark.fs.{FileSystem, HadoopFS}
 import org.apache.spark.sql.SparkSession
-
-import java.util.concurrent.atomic.AtomicInteger
 
 object DatePartitions {
   def apply(root: String, pathGenerator: DatePartitionFormatter)(
@@ -19,7 +17,6 @@ object DatePartitions {
 }
 
 class DatePartitions(fs: FileSystem, pathGenerator: DatePartitionFormatter) {
-  var queries: AtomicInteger = new AtomicInteger(0)
 
   def generatePaths(date1: LocalDateTime, date2: LocalDateTime): Seq[String] = {
     val (from, to) = {
@@ -28,44 +25,15 @@ class DatePartitions(fs: FileSystem, pathGenerator: DatePartitionFormatter) {
       else (date1, date1)
     }
 
-    println(from)
-    println(to)
-    println(
-      s"possible partitions are: ${Duration.between(from, to.plusDays(1)).toDays}")
-
-    val toRet = generatePossibleDates(from, to).par
+    generatePossibleDates(from, to).par
       .map(pathGenerator.dateToPath)
-      .map { x =>
-        queries.incrementAndGet(); x
-      }
       .filter(fs.pathExists)
       .seq
-
-    println(s"queries done are: $queries")
-    println(s"actual ones are: ${toRet.length}")
-
-    toRet
-  }
-
-  private def partitionExists(existingPartitions: Seq[String],
-                              partition: String): Boolean = {
-    val firstPartitionChecked =
-      if (pathGenerator.columnNames.length > 1) { // Skip following test when only one partition is specified
-        val firstColumnValue = partition.substring(0, partition.indexOf('/'))
-        existingPartitions.contains(firstColumnValue)
-      } else {
-        true
-      }
-
-    if (firstPartitionChecked) {
-      queries.getAndIncrement()
-      fs.pathExists(partition)
-    } else false
   }
 
   private def generatePossibleDates(from: LocalDateTime,
                                     to: LocalDateTime): Seq[LocalDateTime] = {
-    val generateDatesForYear = (year: Int) => {
+    def generateDatesForYear(year: Int): Seq[LocalDateTime] = {
       val partitionFrom = LocalDateTime.of(year, 1, 1, 0, 0)
       val partitionTo = LocalDateTime.of(year, 12, 31, 0, 0)
       datesGen(partitionFrom, partitionTo)
@@ -76,6 +44,8 @@ class DatePartitions(fs: FileSystem, pathGenerator: DatePartitionFormatter) {
       fs.listSubdirectories("/")
         .map(_.replace(s"$yearColumnName=", "").toInt)
         .flatMap(generateDatesForYear)
+        .dropWhile(_.isBefore(from))
+        .takeWhile(date => date.isBefore(to) || date.isEqual(to))
 
     } else {
       datesGen(from, to)

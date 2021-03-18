@@ -14,7 +14,10 @@ class DatePartitionsTest extends WordSpec with MockFactory {
         val to = LocalDateTime.of(2020, 5, 15, 0, 0)
 
         val fsStub = stub[FileSystem]
-        (fsStub.pathExists _).when(*).returns(true)
+        (fsStub.pathExists _).when("year=2020/month=05/day=12").returns(true)
+        (fsStub.pathExists _).when("year=2020/month=05/day=13").returns(true)
+        (fsStub.pathExists _).when("year=2020/month=05/day=14").returns(true)
+        (fsStub.pathExists _).when("year=2020/month=05/day=15").returns(true)
         (fsStub.listSubdirectories _).when(*).returns("year=2020" :: Nil)
 
         val expected = "year=2020/month=05/day=12" ::
@@ -36,7 +39,10 @@ class DatePartitionsTest extends WordSpec with MockFactory {
         val to = LocalDateTime.of(2020, 5, 12, 0, 0)
 
         val fsStub = stub[FileSystem]
-        (fsStub.pathExists _).when(*).returns(true)
+        (fsStub.pathExists _).when("year=2020/month=05/day=12").returns(true)
+        (fsStub.pathExists _).when("year=2020/month=05/day=13").returns(true)
+        (fsStub.pathExists _).when("year=2020/month=05/day=14").returns(true)
+        (fsStub.pathExists _).when("year=2020/month=05/day=15").returns(true)
         (fsStub.listSubdirectories _).when(*).returns("year=2020" :: Nil)
 
         val expected = "year=2020/month=05/day=12" ::
@@ -58,7 +64,7 @@ class DatePartitionsTest extends WordSpec with MockFactory {
         val to = LocalDateTime.of(2020, 5, 15, 0, 0)
 
         val fsStub = stub[FileSystem]
-        (fsStub.pathExists _).when(*).returns(true)
+        (fsStub.pathExists _).when("year=2020/month=05/day=15").returns(true)
         (fsStub.listSubdirectories _).when(*).returns("year=2020" :: Nil)
 
         val expected = "year=2020/month=05/day=15" ::
