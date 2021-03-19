@@ -11,12 +11,6 @@ object DatePartitionsTest {
   val MAY_THIRTEEN = "year=2020/month=05/day=13"
   val MAY_FOURTEEN = "year=2020/month=05/day=14"
   val MAY_FIFTEEN = "year=2020/month=05/day=15"
-
-  val EXPECTED_DAYS_OF_MAY: Seq[String] = MAY_TWELFTH ::
-    MAY_THIRTEEN ::
-    MAY_FOURTEEN ::
-    MAY_FIFTEEN ::
-    Nil
 }
 
 class DatePartitionsTest extends WordSpec with MockFactory {
@@ -35,7 +29,11 @@ class DatePartitionsTest extends WordSpec with MockFactory {
         (fsStub.pathExists _).when(MAY_FIFTEEN).returns(true)
         (fsStub.listSubdirectories _).when(*).returns("year=2020" :: Nil)
 
-        val expected = EXPECTED_DAYS_OF_MAY
+        val expected = MAY_TWELFTH ::
+          MAY_THIRTEEN ::
+          MAY_FOURTEEN ::
+          MAY_FIFTEEN ::
+          Nil
 
         val generated = DatePartitions(fsStub, DatePartitionFormatter.standard)
           .generatePaths(from, to)
@@ -56,7 +54,11 @@ class DatePartitionsTest extends WordSpec with MockFactory {
         (fsStub.pathExists _).when(MAY_FIFTEEN).returns(true)
         (fsStub.listSubdirectories _).when(*).returns("year=2020" :: Nil)
 
-        val expected = EXPECTED_DAYS_OF_MAY
+        val expected = MAY_TWELFTH ::
+          MAY_THIRTEEN ::
+          MAY_FOURTEEN ::
+          MAY_FIFTEEN ::
+          Nil
 
         val generated = DatePartitions(fsStub, DatePartitionFormatter.standard)
           .generatePaths(from, to)
