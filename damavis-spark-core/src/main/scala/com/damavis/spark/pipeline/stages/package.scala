@@ -1,5 +1,5 @@
 package com.damavis.spark.pipeline
 
-package object predefined {
+package object stages {
   def cache: PipelineStage = new CacheStage
 }
