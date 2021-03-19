@@ -1,7 +1,6 @@
 package com.damavis.spark.resource.partitioning
 
 import java.time.LocalDateTime
-
 import com.damavis.spark.fs.{FileSystem, HadoopFS}
 import org.apache.spark.sql.SparkSession
 
@@ -18,32 +17,39 @@ object DatePartitions {
 }
 
 class DatePartitions(fs: FileSystem, pathGenerator: DatePartitionFormatter) {
-  def generatePaths(date1: LocalDateTime, date2: LocalDateTime): Seq[String] = {
-    val existingPartitions: Seq[String] = fs.listSubdirectories("/")
 
+  def generatePaths(date1: LocalDateTime, date2: LocalDateTime): Seq[String] = {
     val (from, to) = {
       if (date2.isAfter(date1)) (date1, date2)
       else if (date1.isAfter(date2)) (date2, date1)
       else (date1, date1)
     }
 
-    datesGen(from, to).par
+    generatePossibleDates(from, to).par
       .map(pathGenerator.dateToPath)
-      .filter(partitionExists(existingPartitions, _))
+      .filter(fs.pathExists)
       .seq
   }
 
-  private def partitionExists(existingPartitions: Seq[String],
-                              partition: String): Boolean = {
-    val firstPartitionChecked =
-      if (pathGenerator.columnNames.length > 1) { // Skip following test when only one partition is specified
-        val firstColumnValue = partition.substring(0, partition.indexOf('/'))
-        existingPartitions.contains(firstColumnValue)
-      } else {
-        true
-      }
+  private def generatePossibleDates(from: LocalDateTime,
+                                    to: LocalDateTime): Seq[LocalDateTime] = {
+    def generateDatesForYear(year: Int): Seq[LocalDateTime] = {
+      val partitionFrom = LocalDateTime.of(year, 1, 1, 0, 0)
+      val partitionTo = LocalDateTime.of(year, 12, 31, 0, 0)
+      datesGen(partitionFrom, partitionTo)
+    }
 
-    if (firstPartitionChecked) fs.pathExists(partition) else false
+    if (pathGenerator.isYearlyPartitioned) {
+      val yearColumnName = pathGenerator.columnNames.head
+      fs.listSubdirectories("/")
+        .map(_.replace(s"$yearColumnName=", "").toInt)
+        .flatMap(generateDatesForYear)
+        .dropWhile(_.isBefore(from))
+        .takeWhile(date => date.isBefore(to) || date.isEqual(to))
+
+    } else {
+      datesGen(from, to)
+    }
   }
 
   private def datesGen(from: LocalDateTime,

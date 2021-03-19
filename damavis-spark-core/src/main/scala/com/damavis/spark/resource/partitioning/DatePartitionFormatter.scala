@@ -89,4 +89,7 @@ class DatePartitionFormatter protected (
 
     temporalField.getBaseUnit
   }
+
+  def isYearlyPartitioned: Boolean =
+    columns.nonEmpty && columns.head.pattern == "yyyy"
 }
