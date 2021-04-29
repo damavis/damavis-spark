@@ -24,10 +24,10 @@ class SparkAppTest extends FlatSpec with SparkApp {
 
   "An SparkApp" should
     "run successfully" in {
-    import spark.implicits._
-    val df = spark.sparkContext.parallelize(List(1, 2, 3)).toDF("number")
-    assert(df.count() === 3)
-  }
+      import spark.implicits._
+      val df = spark.sparkContext.parallelize(List(1, 2, 3)).toDF("number")
+      assert(df.count() === 3)
+    }
 
   it should "create databases in defined warehouse path" in {
     import spark.implicits._
@@ -42,8 +42,7 @@ class SparkAppTest extends FlatSpec with SparkApp {
       s"hdfs://localhost:8020${warehouseDir}/test.db/dummy_going_real",
       Format.Parquet,
       managed = true,
-      Column("number", "int", partitioned = false, nullable = true) :: Nil
-    )
+      Column("number", "int", partitioned = false, nullable = true) :: Nil)
 
     assert(obtained === expected)
   }

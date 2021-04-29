@@ -23,8 +23,7 @@ class FileWriter(params: FileWriterParameters) extends ResourceWriter {
       .save(params.path)
   }
 
-  private def validatePartitioning(data: DataFrame,
-                                   columnNames: Seq[String]): Unit = {
+  private def validatePartitioning(data: DataFrame, columnNames: Seq[String]): Unit = {
     val fields = data.schema.fieldNames
 
     val numberPartitionColumns = columnNames.length
@@ -52,4 +51,5 @@ class FileWriter(params: FileWriterParameters) extends ResourceWriter {
       throw new FileResourceWriteException(msg)
     }
   }
+
 }

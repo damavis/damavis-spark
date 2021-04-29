@@ -17,17 +17,16 @@ class SnowflakeJoinReaderTest extends WordSpec with DataFrameSuiteBase {
     "is performed it" should {
       "filter reader with given data" ignore {
         import spark.implicits._
-        val data = Seq(
-          (Date.valueOf("2020-01-01")),
-        ).toDF("dt")
+        val data = Seq((Date.valueOf("2020-01-01"))).toDF("dt")
 
-        val reader = SnowflakeReader(account,
-                                     user,
-                                     password,
-                                     warehouse,
-                                     db,
-                                     "PUBLIC",
-                                     Some("MY_TEST_TABLE"))(spark)
+        val reader = SnowflakeReader(
+          account,
+          user,
+          password,
+          warehouse,
+          db,
+          "PUBLIC",
+          Some("MY_TEST_TABLE"))(spark)
         val joinReader = SnowflakeJoinReader(reader, data)(spark)
         assert(joinReader.read().count() == 1)
       }

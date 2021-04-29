@@ -42,4 +42,5 @@ object DbManager {
 
     new Database(db, HadoopFS(), catalog)
   }
+
 }

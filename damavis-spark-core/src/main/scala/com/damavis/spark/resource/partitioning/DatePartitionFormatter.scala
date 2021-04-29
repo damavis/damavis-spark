@@ -1,4 +1,5 @@
 package com.damavis.spark.resource.partitioning
+
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.{ChronoField, TemporalUnit}
@@ -6,6 +7,7 @@ import java.time.temporal.{ChronoField, TemporalUnit}
 import scala.collection.JavaConverters._
 
 object DatePartitionFormatter {
+
   protected case class ColumnFormatter(column: String,
                                        pattern: String,
                                        formatter: DateTimeFormatter)
@@ -60,10 +62,12 @@ object DatePartitionFormatter {
     }
     new DatePartitionFormatter(cols)
   }
+
 }
 
 class DatePartitionFormatter protected (
     columns: Seq[DatePartitionFormatter.ColumnFormatter]) {
+
   def dateToPath(date: LocalDateTime): String = {
     columns
       .map { part =>
@@ -92,4 +96,5 @@ class DatePartitionFormatter protected (
 
   def isYearlyPartitioned: Boolean =
     columns.nonEmpty && columns.head.pattern == "yyyy"
+
 }

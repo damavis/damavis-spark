@@ -11,7 +11,7 @@ import org.apache.spark.sql.SparkSession
 import org.scalatest.WordSpec
 
 class SparkTestBase
-    extends WordSpec
+  extends WordSpec
     with DataFrameSuiteBase
     with SparkTestSupport
     with SparkContextProvider
@@ -33,8 +33,9 @@ class SparkTestBase
       .setMaster("local[*]")
       .set("spark.sql.catalogImplementation", "hive")
       .set("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
-      .set("spark.sql.catalog.spark_catalog",
-           "org.apache.spark.sql.delta.catalog.DeltaCatalog")
+      .set(
+        "spark.sql.catalog.spark_catalog",
+        "org.apache.spark.sql.delta.catalog.DeltaCatalog")
       .set("spark.hadoop.fs.default.name", HDFSCluster.uri)
       .set("spark.sql.warehouse.dir", warehouseConf) // Ignored by Holden Karau
   }

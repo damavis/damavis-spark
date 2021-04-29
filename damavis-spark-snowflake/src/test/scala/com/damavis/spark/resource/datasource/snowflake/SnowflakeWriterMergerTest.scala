@@ -20,16 +20,16 @@ class SnowflakeWriterMergerTest extends WordSpec with DataFrameSuiteBase {
         val data = Seq(
           (1, "user1", Date.valueOf("2020-01-02")),
           (2, "user1", Date.valueOf("2020-01-02")),
-          (3, "user1", Date.valueOf("2020-01-01"))
-        ).toDF("id", "username", "dt")
+          (3, "user1", Date.valueOf("2020-01-01"))).toDF("id", "username", "dt")
 
-        val writer = SnowflakeWriter(account,
-                                     user,
-                                     password,
-                                     warehouse,
-                                     db,
-                                     "PUBLIC",
-                                     "MY_TEST_TABLE")(spark)
+        val writer = SnowflakeWriter(
+          account,
+          user,
+          password,
+          warehouse,
+          db,
+          "PUBLIC",
+          "MY_TEST_TABLE")(spark)
         val merger = SnowflakeWriterMerger(writer, Seq("dt"))(spark)
         merger.write(data)
       }

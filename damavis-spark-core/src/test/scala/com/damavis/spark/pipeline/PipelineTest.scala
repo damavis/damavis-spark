@@ -30,9 +30,10 @@ class PipelineTest extends SparkTestBase {
       val nationalitiesTable = db.getTable("nationalities").get
 
       val inTable =
-        db.getUnmanagedTable("external_authors_table",
-                             s"/$name/external-authors",
-                             Format.Parquet)
+        db.getUnmanagedTable(
+          "external_authors_table",
+          s"/$name/external-authors",
+          Format.Parquet)
           .get
 
       val extractNationality = new PipelineStage {
@@ -61,9 +62,7 @@ class PipelineTest extends SparkTestBase {
         StructType(
           StructField("nationality", StringType, nullable = true) ::
             StructField("count", LongType, nullable = true) ::
-            Nil
-        )
-      )
+            Nil))
 
       assertDataFrameEquals(written, expectedDf)
     }

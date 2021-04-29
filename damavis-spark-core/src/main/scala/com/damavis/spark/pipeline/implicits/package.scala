@@ -15,4 +15,5 @@ package object implicits {
     new PipelineTarget {
       override def put(data: DataFrame): Unit = resource.write(data)
     }
+
 }

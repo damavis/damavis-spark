@@ -16,10 +16,9 @@ import org.slf4j.LoggerFactory
 import scala.language.postfixOps
 import scala.util.{Failure, Success, Try}
 
-class Database(
-    db: SparkDatabase,
-    fs: FileSystem,
-    protected[database] val catalog: Catalog)(implicit spark: SparkSession) {
+class Database(db: SparkDatabase,
+               fs: FileSystem,
+               protected[database] val catalog: Catalog)(implicit spark: SparkSession) {
 
   private lazy val logger = LoggerFactory.getLogger(this.getClass)
 
@@ -59,9 +58,7 @@ class Database(
     }
   }
 
-  def getUnmanagedTable(name: String,
-                        path: String,
-                        format: Format): Try[Table] = {
+  def getUnmanagedTable(name: String, path: String, format: Format): Try[Table] = {
     Try {
       val dbPath = parseAndCheckTableName(name)
       val actualName = dbPath._2
@@ -163,9 +160,7 @@ class Database(
         logger.warn("Keeping catalog only data")
         catalogTable
       case ue: Throwable =>
-        logger.error(
-          "Could not combine catalog and delta meta, Unknown Cause: ",
-          ue)
+        logger.error("Could not combine catalog and delta meta, Unknown Cause: ", ue)
         logger.warn("Keeping catalog only data")
         catalogTable
     }
@@ -178,10 +173,11 @@ class Database(
     val partitions = metadata.partitionColumnNames
 
     val columns = metadata.schema.map(field => {
-      Column(field.name,
-             field.dataType.simpleString,
-             partitions.contains(field.name),
-             field.nullable)
+      Column(
+        field.name,
+        field.dataType.simpleString,
+        partitions.contains(field.name),
+        field.nullable)
 
     })
     columns

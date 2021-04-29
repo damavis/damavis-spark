@@ -10,6 +10,7 @@ object Pipeline {
 
   def apply(pipelines: Pipeline*): Pipeline =
     new Pipeline(pipelines.flatMap(x => x.getStages).toList)
+
 }
 
 class Pipeline(stages: List[PipelineStage]) {
@@ -24,4 +25,5 @@ class Pipeline(stages: List[PipelineStage]) {
 
   def ->(stage: PipelineStage): Pipeline =
     Pipeline(this.getStages ++ List(stage))
+
 }

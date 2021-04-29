@@ -11,16 +11,15 @@ val dependencies = Seq(
   "org.apache.spark" %% "spark-hive" % sparkVersion % Provided,
   "org.apache.spark" %% "spark-avro" % sparkVersion % Provided,
   "io.delta" %% "delta-core" % "0.7.0" % Provided,
-  "com.typesafe" % "config" % "1.3.2"
-)
+  "com.typesafe" % "config" % "1.3.2")
 
 val testDependencies = Seq(
   "org.scalatest" %% "scalatest" % "3.0.5" % Test,
   "org.scalamock" %% "scalamock" % "4.1.0" % Test,
-  "com.holdenkarau" %% "spark-testing-base" % s"${sparkTestVersion}_0.14.0" % Test
-)
+  "com.holdenkarau" %% "spark-testing-base" % s"${sparkTestVersion}_0.14.0" % Test)
 
 import xerial.sbt.Sonatype._
+
 val settings = Seq(
   organization := "com.damavis",
   version := "0.3.0-SNAPSHOT",
@@ -29,30 +28,27 @@ val settings = Seq(
   libraryDependencies ++= dependencies ++ testDependencies,
   fork in Test := true,
   parallelExecution in Test := false,
-  envVars in Test := Map(
-    "MASTER" -> "local[*]"
-  ),
+  envVars in Test := Map("MASTER" -> "local[*]"),
   test in assembly := {},
   // Sonatype
   sonatypeProfileName := "com.damavis",
   sonatypeProjectHosting := Some(
     GitHubHosting("damavis", "damavis-spark", "info@damavis.com")),
   publishMavenStyle := true,
-  licenses := Seq(
-    "APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
+  licenses := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
   developers := List(
-    Developer(id = "piffall",
-              name = "Cristòfol Torrens",
-              email = "piffall@gmail.com",
-              url = url("http://piffall.com")),
-    Developer(id = "priera",
-              name = "Pedro Riera",
-              email = "pedro.riera at damavis dot com",
-              url = url("http://github.com/priera")),
-  ),
+    Developer(
+      id = "piffall",
+      name = "Cristòfol Torrens",
+      email = "piffall@gmail.com",
+      url = url("http://piffall.com")),
+    Developer(
+      id = "priera",
+      name = "Pedro Riera",
+      email = "pedro.riera at damavis dot com",
+      url = url("http://github.com/priera"))),
   publishTo := sonatypePublishToBundle.value,
-  credentials += Publish.credentials
-)
+  credentials += Publish.credentials)
 
 lazy val root = (project in file("."))
   .settings(name := "damavis-spark")
@@ -63,16 +59,12 @@ lazy val root = (project in file("."))
 lazy val core = (project in file("damavis-spark-core"))
   .settings(settings)
   .settings(name := "damavis-spark-core")
-  .settings(
-    crossScalaVersions := supportedScalaVersions,
-  )
+  .settings(crossScalaVersions := supportedScalaVersions)
 
 lazy val azure = (project in file("damavis-spark-azure"))
   .settings(settings)
   .settings(name := "damavis-spark-azure")
-  .settings(
-    crossScalaVersions := supportedScalaVersions,
-  )
+  .settings(crossScalaVersions := supportedScalaVersions)
   .dependsOn(core)
 
 lazy val snowflake = (project in file("damavis-spark-snowflake"))
@@ -80,8 +72,5 @@ lazy val snowflake = (project in file("damavis-spark-snowflake"))
   .settings(name := "damavis-spark-snowflake")
   .settings(
     crossScalaVersions := supportedScalaVersions,
-    libraryDependencies ++= Seq(
-      "net.snowflake" %% "spark-snowflake" % "2.8.2-spark_3.0"
-    )
-  )
+    libraryDependencies ++= Seq("net.snowflake" %% "spark-snowflake" % "2.8.2-spark_3.0"))
   .dependsOn(core)

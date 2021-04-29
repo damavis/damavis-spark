@@ -2,10 +2,7 @@ package com.damavis.spark.database
 
 import com.damavis.spark.resource.Format.Format
 
-case class Column(name: String,
-                  dataType: String,
-                  partitioned: Boolean,
-                  nullable: Boolean)
+case class Column(name: String, dataType: String, partitioned: Boolean, nullable: Boolean)
 
 sealed trait Table {
   def database: String
@@ -24,7 +21,7 @@ case class RealTable(database: String,
                      format: Format,
                      managed: Boolean,
                      columns: Seq[Column])
-    extends Table
+  extends Table
 
 case class DummyTable(database: String, name: String) extends Table {
   override def path: String = ???

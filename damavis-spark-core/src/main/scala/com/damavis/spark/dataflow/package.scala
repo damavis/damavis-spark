@@ -8,6 +8,7 @@ import scala.language.implicitConversions
 package object dataflow {
 
   object implicits {
+
     implicit def defaultSocketOfStage(stage: DataFlowStage): StageSocket =
       stage.left
 
@@ -32,6 +33,7 @@ package object dataflow {
 
       target.left
     }
+
   }
 
 }

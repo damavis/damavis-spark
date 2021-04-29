@@ -5,7 +5,8 @@ import com.damavis.spark.resource.ResourceReader
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 class FileReader(params: FileReaderParameters)(implicit spark: SparkSession)
-    extends ResourceReader {
+  extends ResourceReader {
+
   override def read(): DataFrame = {
 
     val path = params.path
@@ -38,4 +39,5 @@ class FileReader(params: FileReaderParameters)(implicit spark: SparkSession)
       reader.load(path)
     }
   }
+
 }

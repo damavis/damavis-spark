@@ -11,7 +11,7 @@ class TableResourceWriter(spark: SparkSession,
                           table: Table,
                           db: Database,
                           params: TableWriterParameters)
-    extends ResourceWriter {
+  extends ResourceWriter {
 
   private var actualTable: Table = table
 
@@ -20,8 +20,7 @@ class TableResourceWriter(spark: SparkSession,
     val format = params.storageFormat
     val partitionedBy = params.partitionedBy.getOrElse(Nil)
 
-    actualTable =
-      db.addTableIfNotExists(actualTable, schema, format, partitionedBy)
+    actualTable = db.addTableIfNotExists(actualTable, schema, format, partitionedBy)
   }
 
   private def mergeExpression(partitions: Seq[String]): String = {
@@ -118,8 +117,7 @@ class TableResourceWriter(spark: SparkSession,
         case e: Throwable => throw e
       } finally {
         spark.conf
-          .set("spark.sql.sources.partitionOverwriteMode",
-               previousOverwriteConf)
+          .set("spark.sql.sources.partitionOverwriteMode", previousOverwriteConf)
       }
     }
   }

@@ -26,18 +26,18 @@ class DatabaseTest extends SparkTestBase {
 
       assert(db.catalog.listTables().isEmpty)
 
-      val tryTable = db.getUnmanagedTable("numbers",
-                                          s"/$name/numbers_external",
-                                          Format.Parquet)
+      val tryTable =
+        db.getUnmanagedTable("numbers", s"/$name/numbers_external", Format.Parquet)
       assert(tryTable.isSuccess)
 
       val table = tryTable.get
-      val expected = RealTable("test",
-                               "numbers",
-                               s"/$name/numbers_external",
-                               Format.Parquet,
-                               managed = false,
-                               Nil)
+      val expected = RealTable(
+        "test",
+        "numbers",
+        s"/$name/numbers_external",
+        Format.Parquet,
+        managed = false,
+        Nil)
       assert(table === expected)
 
       assert(db.catalog.listTables().count() == 1)
@@ -46,45 +46,47 @@ class DatabaseTest extends SparkTestBase {
     "fail to get an external table if there is no data" in {
       val tryTable =
         db.getUnmanagedTable("numbers", s"/$name/1234", Format.Parquet)
-      checkExceptionOfType(tryTable,
-                           classOf[TableAccessException],
-                           "Path not reachable")
+      checkExceptionOfType(tryTable, classOf[TableAccessException], "Path not reachable")
     }
 
     "fail to get an external table if validations do not succeed" in {
       val numbersDf = (1 :: 2 :: 3 :: 4 :: Nil).toDF("number")
 
-      db.catalog.createTable("numbers1",
-                             "parquet",
-                             numbersDf.schema,
-                             Map[String, String]())
+      db.catalog.createTable(
+        "numbers1",
+        "parquet",
+        numbersDf.schema,
+        Map[String, String]())
 
-      val tryTable1 = db.getUnmanagedTable("numbers1",
-                                           s"/$name/numbers_external",
-                                           Format.Parquet)
-      checkExceptionOfType(tryTable1,
-                           classOf[TableAccessException],
-                           "already registered as MANAGED")
+      val tryTable1 =
+        db.getUnmanagedTable("numbers1", s"/$name/numbers_external", Format.Parquet)
+      checkExceptionOfType(
+        tryTable1,
+        classOf[TableAccessException],
+        "already registered as MANAGED")
 
       //Register an external table, and try to get it again but with wrong parameters
       numbersDf.write
         .parquet(s"/$name/numbers_external2")
 
-      db.getUnmanagedTable("numbers_wrong_path",
-                           s"/$name/numbers_external2",
-                           Format.Parquet)
+      db.getUnmanagedTable(
+        "numbers_wrong_path",
+        s"/$name/numbers_external2",
+        Format.Parquet)
 
-      val tryTable2 = db.getUnmanagedTable("numbers_wrong_path",
-                                           s"/$name/numbers_external",
-                                           Format.Parquet)
+      val tryTable2 = db.getUnmanagedTable(
+        "numbers_wrong_path",
+        s"/$name/numbers_external",
+        Format.Parquet)
       checkExceptionOfType(
         tryTable2,
         classOf[TableAccessException],
         "It is already registered in the catalog with a different path")
 
-      val tryTable3 = db.getUnmanagedTable("numbers_wrong_path",
-                                           s"/$name/numbers_external2",
-                                           Format.Avro)
+      val tryTable3 = db.getUnmanagedTable(
+        "numbers_wrong_path",
+        s"/$name/numbers_external2",
+        Format.Avro)
       checkExceptionOfType(
         tryTable3,
         classOf[TableAccessException],
@@ -106,8 +108,7 @@ class DatabaseTest extends SparkTestBase {
         s"hdfs://localhost:8020${warehouseDir.get}/test.db/dummy_going_real",
         Format.Parquet,
         managed = true,
-        Column("number", "int", partitioned = false, nullable = true) :: Nil
-      )
+        Column("number", "int", partitioned = false, nullable = true) :: Nil)
 
       assert(obtained === expected)
 

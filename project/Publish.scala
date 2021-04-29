@@ -5,8 +5,10 @@ object Publish {
   val PASSWORD: String = sys.env.getOrElse("PASSWORD", "")
 
   val credentials =
-    Credentials("Sonatype Nexus Repository Manager",
-                "oss.sonatype.org",
-                USERNAME,
-                PASSWORD)
+    Credentials(
+      "Sonatype Nexus Repository Manager",
+      "oss.sonatype.org",
+      USERNAME,
+      PASSWORD)
+
 }

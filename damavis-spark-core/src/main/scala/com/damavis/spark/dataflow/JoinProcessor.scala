@@ -8,4 +8,5 @@ abstract class JoinProcessor extends Processor {
 
   override def compute(sockets: SocketSet): DataFrame =
     computeImpl(sockets.left.get, sockets.right.get)
+
 }

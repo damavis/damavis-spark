@@ -12,29 +12,30 @@ import scala.util.{Failure, Success, Try}
 
 object TableWriterBuilder {
 
-  def apply(tryTable: Try[Table])(implicit spark: SparkSession,
-                                  db: Database): BasicTableWriterBuilder = {
+  def apply(tryTable: Try[Table])(
+      implicit spark: SparkSession,
+      db: Database): BasicTableWriterBuilder = {
     tryTable match {
       case Success(table)     => apply(table)
       case Failure(exception) => throw exception
     }
   }
 
-  def apply(table: Table)(implicit spark: SparkSession,
-                          db: Database): BasicTableWriterBuilder = {
+  def apply(table: Table)(
+      implicit spark: SparkSession,
+      db: Database): BasicTableWriterBuilder = {
     val params = TableWriterParameters()
     table match {
       case _: DummyTable => new BasicTableWriterBuilder(table, db, params)
       case _: RealTable  => new SealedTableWriterBuilder(table, db, params)
     }
   }
+
 }
 
-class BasicTableWriterBuilder(
-    table: Table,
-    db: Database,
-    params: TableWriterParameters)(implicit spark: SparkSession)
-    extends WriterBuilder {
+class BasicTableWriterBuilder(table: Table, db: Database, params: TableWriterParameters)(
+    implicit spark: SparkSession)
+  extends WriterBuilder {
 
   private var myParams: TableWriterParameters = params
 
@@ -59,8 +60,7 @@ class BasicTableWriterBuilder(
     datePartitioned(formatter)
   }
 
-  def datePartitioned(
-      formatter: DatePartitionFormatter): BasicTableWriterBuilder = {
+  def datePartitioned(formatter: DatePartitionFormatter): BasicTableWriterBuilder = {
     partitionedBy(formatter.columnNames: _*)
   }
 
@@ -85,11 +85,9 @@ class BasicTableWriterBuilder(
 
 }
 
-class SealedTableWriterBuilder(
-    table: Table,
-    db: Database,
-    params: TableWriterParameters)(implicit spark: SparkSession)
-    extends BasicTableWriterBuilder(table, db, params) {
+class SealedTableWriterBuilder(table: Table, db: Database, params: TableWriterParameters)(
+    implicit spark: SparkSession)
+  extends BasicTableWriterBuilder(table, db, params) {
 
   override def withFormat(format: Format): BasicTableWriterBuilder = {
     if (table.format != format) {
@@ -123,4 +121,5 @@ class SealedTableWriterBuilder(
 
     super.partitionedBy(columns: _*)
   }
+
 }

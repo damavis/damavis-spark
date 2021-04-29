@@ -6,7 +6,7 @@ import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 
 case class SnowflakeWriterMerger(writer: SnowflakeWriter, columns: Seq[String])(
     implicit spark: SparkSession)
-    extends ResourceWriter {
+  extends ResourceWriter {
 
   val stagingTable = s"merge_tmp_delta__${writer.table}"
   val targetTable = s"${writer.table}"
@@ -25,15 +25,16 @@ case class SnowflakeWriterMerger(writer: SnowflakeWriter, columns: Seq[String])(
       .copy(table = stagingTable, mode = SaveMode.Overwrite)
       .write(data.select(columns.map(col): _*).distinct())
 
-    SnowflakeMerger(writer.account,
-                    writer.user,
-                    writer.password,
-                    writer.warehouse,
-                    writer.database,
-                    writer.schema,
-                    stagingTable,
-                    targetTable,
-                    columns).merge()
+    SnowflakeMerger(
+      writer.account,
+      writer.user,
+      writer.password,
+      writer.warehouse,
+      writer.database,
+      writer.schema,
+      stagingTable,
+      targetTable,
+      columns).merge()
   }
 
   private def targetExists(): Boolean = {
@@ -44,9 +45,8 @@ case class SnowflakeWriterMerger(writer: SnowflakeWriter, columns: Seq[String])(
       writer.warehouse,
       writer.database,
       "INFORMATION_SCHEMA",
-      query = Some(
-        s"SELECT COUNT(1) = 1 FROM TABLES WHERE TABLE_NAME = '${targetTable}'")
-    )
+      query =
+        Some(s"SELECT COUNT(1) = 1 FROM TABLES WHERE TABLE_NAME = '${targetTable}'"))
 
     reader
       .read()
