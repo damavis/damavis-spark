@@ -71,10 +71,7 @@ class FileReaderBuilder(params: FileReaderParameters)(implicit spark: SparkSessi
 
     if (from.isAfter(to)) {
       val errMsg =
-        s"""Invalid parameters defined for reading spark object with path: ${params.path}.
-           |"from" date is after "to" date.
-           |Dates are: from=$from to=$to
-           |""".stripMargin
+        s"""Invalid parameters. path: ${params.path}. "$from" date is after "$to" date."""
       throw new RuntimeException(errMsg)
     }
   }

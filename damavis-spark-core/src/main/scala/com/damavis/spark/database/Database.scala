@@ -139,7 +139,7 @@ class Database(db: SparkDatabase,
 
     logger.info(
       s"Table partitioned by ${catalogTable.partitionColumnNames.mkString("[", ",", "]")}")
-    catalogTable.schema.printTreeString()
+    logger.info(catalogTable.schema.treeString)
 
     // This block of code is necessary because Databricks runtime do not
     // provide DeltaTableUtils.
