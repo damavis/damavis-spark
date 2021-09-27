@@ -10,8 +10,9 @@ case class SnowflakeReader(account: String,
                            database: String,
                            schema: String,
                            table: Option[String] = None,
-                           query: Option[String] = None)(implicit spark: SparkSession)
-  extends ResourceReader {
+                           query: Option[String] = None,
+                           sfExtraOptions: Map[String, String] = Map())(implicit spark: SparkSession)
+    extends ResourceReader {
 
   val settings = (table, query) match {
     case (Some(tableName), None) => ("dbtable", tableName)
@@ -35,7 +36,7 @@ case class SnowflakeReader(account: String,
   override def read(): DataFrame = {
     spark.read
       .format("net.snowflake.spark.snowflake")
-      .options(sfOptions)
+      .options(sfOptions ++ sfExtraOptions)
       .load()
   }
 

@@ -37,7 +37,8 @@ case class SnowflakeJoinReader(reader: SnowflakeReader, joinData: DataFrame)(
       reader.database,
       reader.schema,
       stagingTable,
-      SaveMode.Overwrite).write(joinData)
+      SaveMode.Overwrite,
+      reader.sfExtraOptions).write(joinData)
     reader.copy(table = None, query = Some(query)).read()
   }
 
