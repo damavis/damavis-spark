@@ -32,7 +32,7 @@ class FileReader(params: FileReaderParameters)(implicit spark: SparkSession)
         .map(partition => s"$path/$partition")
 
       reader
-        .option("basePath", path)
+        .option("basePath", params.options.getOrElse("basePath", path))
         .load(partitionsToLoad: _*)
 
     } else {
