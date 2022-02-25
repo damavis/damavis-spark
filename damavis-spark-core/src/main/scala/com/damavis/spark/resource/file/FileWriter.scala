@@ -20,6 +20,7 @@ class FileWriter(params: FileWriterParameters) extends ResourceWriter {
     partitionedWriter
       .mode(params.mode)
       .format(params.format.toString)
+      .options(params.options)
       .save(params.path)
   }
 
