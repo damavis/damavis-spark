@@ -11,8 +11,9 @@ case class SnowflakeWriter(account: String,
                            schema: String,
                            table: String,
                            mode: SaveMode = SaveMode.Ignore,
+                           sfExtraOptions: Map[String, String] = Map(),
                            preScript: Option[String] = None)(implicit spark: SparkSession)
-  extends ResourceWriter {
+    extends ResourceWriter {
 
   val sfOptions = Map(
     "sfURL" -> s"${account}.snowflakecomputing.com",
@@ -28,7 +29,7 @@ case class SnowflakeWriter(account: String,
   override def write(data: DataFrame): Unit = {
     data.write
       .format("net.snowflake.spark.snowflake")
-      .options(sfOptions)
+      .options(sfOptions ++ sfExtraOptions)
       .mode(mode)
       .save()
   }

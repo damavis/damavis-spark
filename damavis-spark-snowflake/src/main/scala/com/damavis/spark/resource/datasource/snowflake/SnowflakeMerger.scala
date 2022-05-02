@@ -11,7 +11,8 @@ case class SnowflakeMerger(account: String,
                            schema: String,
                            sourceTable: String,
                            targetTable: String,
-                           pkColumns: Seq[String])(implicit spark: SparkSession) {
+                           pkColumns: Seq[String],
+                           sfExtraOptions: Map[String, String] = Map())(implicit spark: SparkSession) {
 
   val sfOptions = Map(
     "sfURL" -> s"${account}.snowflakecomputing.com",
@@ -38,7 +39,7 @@ case class SnowflakeMerger(account: String,
         |WHEN MATCHED THEN DELETE
         |""".stripMargin
 
-    Utils.runQuery(sfOptions, deleteQuery)
+    Utils.runQuery(sfOptions ++ sfExtraOptions, deleteQuery)
   }
 
 }
