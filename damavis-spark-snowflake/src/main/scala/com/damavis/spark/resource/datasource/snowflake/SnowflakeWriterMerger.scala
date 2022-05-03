@@ -7,8 +7,9 @@ import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 
 case class SnowflakeWriterMerger(writer: SnowflakeWriter,
                                  columns: Seq[String],
-                                 stagingTableSchema: Option[String] = None ,
-                                 deleteStagingTable: Boolean = false)(implicit spark: SparkSession)
+                                 stagingTableSchema: Option[String] = None,
+                                 deleteStagingTable: Boolean = false)(
+    implicit spark: SparkSession)
   extends ResourceWriter {
 
   val stagingTable = s"merge_tmp_delta__${writer.table}"
@@ -63,7 +64,7 @@ case class SnowflakeWriterMerger(writer: SnowflakeWriter,
       .head
   }
 
-  private def dropStagingTable() : Unit = {
+  private def dropStagingTable(): Unit = {
 
     val deleteSourceTableQuery =
       s"DROP TABLE IF EXISTS $stagingTable RESTRICT"
