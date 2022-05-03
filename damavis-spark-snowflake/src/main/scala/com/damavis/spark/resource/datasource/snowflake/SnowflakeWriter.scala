@@ -13,7 +13,7 @@ case class SnowflakeWriter(account: String,
                            mode: SaveMode = SaveMode.Ignore,
                            sfExtraOptions: Map[String, String] = Map(),
                            preScript: Option[String] = None)(implicit spark: SparkSession)
-    extends ResourceWriter {
+  extends ResourceWriter {
 
   val sfOptions = Map(
     "sfURL" -> s"${account}.snowflakecomputing.com",

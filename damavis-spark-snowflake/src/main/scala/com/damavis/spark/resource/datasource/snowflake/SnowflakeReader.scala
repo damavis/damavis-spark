@@ -11,8 +11,9 @@ case class SnowflakeReader(account: String,
                            schema: String,
                            table: Option[String] = None,
                            query: Option[String] = None,
-                           sfExtraOptions: Map[String, String] = Map())(implicit spark: SparkSession)
-    extends ResourceReader {
+                           sfExtraOptions: Map[String, String] = Map())(
+    implicit spark: SparkSession)
+  extends ResourceReader {
 
   val settings = (table, query) match {
     case (Some(tableName), None) => ("dbtable", tableName)

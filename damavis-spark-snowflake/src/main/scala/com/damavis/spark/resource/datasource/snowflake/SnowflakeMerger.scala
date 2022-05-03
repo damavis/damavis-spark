@@ -12,7 +12,8 @@ case class SnowflakeMerger(account: String,
                            sourceTable: String,
                            targetTable: String,
                            pkColumns: Seq[String],
-                           sfExtraOptions: Map[String, String] = Map())(implicit spark: SparkSession) {
+                           sfExtraOptions: Map[String, String] = Map())(
+    implicit spark: SparkSession) {
 
   val sfOptions = Map(
     "sfURL" -> s"${account}.snowflakecomputing.com",
