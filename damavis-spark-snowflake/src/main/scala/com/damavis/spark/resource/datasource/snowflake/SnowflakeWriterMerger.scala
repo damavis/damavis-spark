@@ -1,11 +1,14 @@
 package com.damavis.spark.resource.datasource.snowflake
 
 import com.damavis.spark.resource.ResourceWriter
+import net.snowflake.spark.snowflake.Utils
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 
-case class SnowflakeWriterMerger(writer: SnowflakeWriter, columns: Seq[String])(
-    implicit spark: SparkSession)
+case class SnowflakeWriterMerger(writer: SnowflakeWriter,
+                                 columns: Seq[String],
+                                 stagingTableSchema: Option[String] = None ,
+                                 deleteStagingTable: Boolean = false)(implicit spark: SparkSession)
   extends ResourceWriter {
 
   val stagingTable = s"merge_tmp_delta__${writer.table}"
@@ -31,11 +34,13 @@ case class SnowflakeWriterMerger(writer: SnowflakeWriter, columns: Seq[String])(
       writer.password,
       writer.warehouse,
       writer.database,
-      writer.schema,
+      stagingTableSchema.getOrElse(writer.schema),
       stagingTable,
       targetTable,
       columns,
       writer.sfExtraOptions).merge()
+
+    if (deleteStagingTable) dropStagingTable()
   }
 
   private def targetExists(): Boolean = {
@@ -56,6 +61,14 @@ case class SnowflakeWriterMerger(writer: SnowflakeWriter, columns: Seq[String])(
       .collect
       .map(_.getBoolean(0))
       .head
+  }
+
+  private def dropStagingTable() : Unit = {
+
+    val deleteSourceTableQuery =
+      s"DROP TABLE IF EXISTS $stagingTable RESTRICT"
+
+    Utils.runQuery(writer.sfOptions, deleteSourceTableQuery)
   }
 
 }
