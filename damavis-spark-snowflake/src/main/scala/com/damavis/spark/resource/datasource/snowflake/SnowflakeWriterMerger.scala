@@ -5,9 +5,18 @@ import net.snowflake.spark.snowflake.Utils
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 
+/**
+  * Merge writer data to target table by specified columns
+  *
+  * @param writer Snowflake writer
+  * @param columns columns used to merge on
+  * @param stagingSchema staging database schema
+  * @param deleteStagingTable Delete staging table if true
+  * @param spark SparkSession object
+  */
 case class SnowflakeWriterMerger(writer: SnowflakeWriter,
                                  columns: Seq[String],
-                                 stagingTableSchema: Option[String] = None,
+                                 stagingSchema: Option[String] = None,
                                  deleteStagingTable: Boolean = false)(
     implicit spark: SparkSession)
   extends ResourceWriter {
@@ -35,7 +44,7 @@ case class SnowflakeWriterMerger(writer: SnowflakeWriter,
       writer.password,
       writer.warehouse,
       writer.database,
-      stagingTableSchema.getOrElse(writer.schema),
+      stagingSchema.getOrElse(writer.schema),
       stagingTable,
       targetTable,
       columns,
