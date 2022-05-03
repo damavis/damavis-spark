@@ -86,8 +86,7 @@ class FileReaderTest extends SparkTestBase {
             StructField("year", IntegerType, nullable = true) ::
             StructField("month", IntegerType, nullable = true) ::
             StructField("day", IntegerType, nullable = true) ::
-            Nil
-        )
+            Nil)
 
         val expected = spark.createDataFrame(rows, schema)
         assertDataFrameEquals(actorsFromTwo, expected)
@@ -119,8 +118,8 @@ class FileReaderTest extends SparkTestBase {
           Log("::1", Timestamp.valueOf("2020-01-01 20:00:00"), "DEBUG", "20"),
           Log("::1", Timestamp.valueOf("2020-01-01 21:00:00"), "DEBUG", "21"),
           Log("::1", Timestamp.valueOf("2020-01-01 22:00:00"), "DEBUG", "22"),
-          Log("::1", Timestamp.valueOf("2020-01-01 23:00:00"), "DEBUG", "23")
-        ).withColumn("year", date_format(col("ts"), "yyyy"))
+          Log("::1", Timestamp.valueOf("2020-01-01 23:00:00"), "DEBUG", "23"))
+          .withColumn("year", date_format(col("ts"), "yyyy"))
           .withColumn("month", date_format(col("ts"), "MM"))
           .withColumn("day", date_format(col("ts"), "dd"))
           .withColumn("hour", date_format(col("ts"), "H"))

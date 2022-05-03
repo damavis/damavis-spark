@@ -9,8 +9,7 @@ import scala.util.{Failure, Success, Try}
 
 object TableReaderBuilder {
 
-  def apply(tryTable: Try[Table])(
-      implicit spark: SparkSession): TableReaderBuilder = {
+  def apply(tryTable: Try[Table])(implicit spark: SparkSession): TableReaderBuilder = {
     tryTable match {
       case Success(table)     => apply(table)
       case Failure(exception) => throw exception
@@ -28,10 +27,13 @@ object TableReaderBuilder {
 
     new TableReaderBuilder(table, spark)
   }
+
 }
 
 class TableReaderBuilder protected (table: Table, spark: SparkSession)
-    extends ReaderBuilder {
+  extends ReaderBuilder {
+
   override def reader(): ResourceReader =
     new TableResourceReader(spark, table)
+
 }

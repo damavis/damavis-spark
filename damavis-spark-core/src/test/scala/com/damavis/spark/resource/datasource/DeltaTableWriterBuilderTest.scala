@@ -21,8 +21,7 @@ class DeltaTableWriterBuilderTest extends SparkTestBase {
       val sink = TableWriterBuilder(table)
         .withFormat(Format.Parquet)
         .partitionedBy("nationality")
-        .overwritePartitionBehavior(
-          OverwritePartitionBehavior.OVERWRITE_MATCHING)
+        .overwritePartitionBehavior(OverwritePartitionBehavior.OVERWRITE_MATCHING)
         .writer()
 
       sink.write(authors)
@@ -38,8 +37,7 @@ class DeltaTableWriterBuilderTest extends SparkTestBase {
       val sink2 = TableWriterBuilder(table2)
         .withFormat(Format.Delta)
         .pk(Seq("name"))
-        .overwritePartitionBehavior(
-          OverwritePartitionBehavior.OVERWRITE_MATCHING)
+        .overwritePartitionBehavior(OverwritePartitionBehavior.OVERWRITE_MATCHING)
         .writer()
 
       sink2.write(authors)

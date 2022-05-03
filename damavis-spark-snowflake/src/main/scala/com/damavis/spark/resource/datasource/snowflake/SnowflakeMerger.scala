@@ -3,16 +3,17 @@ package com.damavis.spark.resource.datasource.snowflake
 import net.snowflake.spark.snowflake.Utils
 import org.apache.spark.sql.SparkSession
 
-case class SnowflakeMerger(
-    account: String,
-    user: String,
-    password: String,
-    warehouse: String,
-    database: String,
-    schema: String,
-    sourceTable: String,
-    targetTable: String,
-    pkColumns: Seq[String])(implicit spark: SparkSession) {
+case class SnowflakeMerger(account: String,
+                           user: String,
+                           password: String,
+                           warehouse: String,
+                           database: String,
+                           schema: String,
+                           sourceTable: String,
+                           targetTable: String,
+                           pkColumns: Seq[String],
+                           sfExtraOptions: Map[String, String] = Map())(
+    implicit spark: SparkSession) {
 
   val sfOptions = Map(
     "sfURL" -> s"${account}.snowflakecomputing.com",
@@ -22,8 +23,7 @@ case class SnowflakeMerger(
     "sfSchema" -> schema,
     "sfWarehouse" -> warehouse,
     "sfCompress" -> "on",
-    "sfSSL" -> "on"
-  )
+    "sfSSL" -> "on")
 
   private def mergeExpression(pkColumns: Seq[String]): String = {
     pkColumns
@@ -40,7 +40,7 @@ case class SnowflakeMerger(
         |WHEN MATCHED THEN DELETE
         |""".stripMargin
 
-    Utils.runQuery(sfOptions, deleteQuery)
+    Utils.runQuery(sfOptions ++ sfExtraOptions, deleteQuery)
   }
 
 }

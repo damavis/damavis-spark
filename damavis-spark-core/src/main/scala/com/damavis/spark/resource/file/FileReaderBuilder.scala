@@ -9,6 +9,7 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types.StructType
 
 object FileReaderBuilder {
+
   def apply(format: Format, path: String)(
       implicit spark: SparkSession): FileReaderBuilder = {
     val params = FileReaderParameters(format, path)
@@ -18,11 +19,11 @@ object FileReaderBuilder {
   def apply(params: FileReaderParameters)(
       implicit spark: SparkSession): FileReaderBuilder =
     new FileReaderBuilder(params)
+
 }
 
-class FileReaderBuilder(params: FileReaderParameters)(
-    implicit spark: SparkSession)
-    extends ReaderBuilder {
+class FileReaderBuilder(params: FileReaderParameters)(implicit spark: SparkSession)
+  extends ReaderBuilder {
 
   override def reader(): ResourceReader = {
     if (params.datePartitioned)
@@ -31,14 +32,18 @@ class FileReaderBuilder(params: FileReaderParameters)(
     new FileReader(params)
   }
 
-  def partitioning(
-      partitionFormatter: DatePartitionFormatter): FileReaderBuilder = {
+  def partitioning(partitionFormatter: DatePartitionFormatter): FileReaderBuilder = {
     val newParams = params.copy(partitionFormatter = partitionFormatter)
     new FileReaderBuilder(newParams)
   }
 
   def options(options: Map[String, String]): FileReaderBuilder = {
     val newParams = params.copy(options = options)
+    new FileReaderBuilder(newParams)
+  }
+
+  def option(key: String, value: String): FileReaderBuilder = {
+    val newParams = params.copy(options = params.options + (key -> value))
     new FileReaderBuilder(newParams)
   }
 
@@ -52,16 +57,14 @@ class FileReaderBuilder(params: FileReaderParameters)(
     betweenDates(LocalDateTime.of(from, time), LocalDateTime.of(to, time))
   }
 
-  def betweenDates(from: LocalDateTime,
-                   to: LocalDateTime): FileReaderBuilder = {
+  def betweenDates(from: LocalDateTime, to: LocalDateTime): FileReaderBuilder = {
     val newParams =
       params.copy(from = Some(from), to = Some(to))
 
     new FileReaderBuilder(newParams)
   }
 
-  def partitionDateFormat(
-      formatter: DatePartitionFormatter): FileReaderBuilder = {
+  def partitionDateFormat(formatter: DatePartitionFormatter): FileReaderBuilder = {
     val newParams = params.copy(partitionFormatter = formatter)
 
     new FileReaderBuilder(newParams)
@@ -73,11 +76,9 @@ class FileReaderBuilder(params: FileReaderParameters)(
 
     if (from.isAfter(to)) {
       val errMsg =
-        s"""Invalid parameters defined for reading spark object with path: ${params.path}.
-           |"from" date is after "to" date.
-           |Dates are: from=$from to=$to
-           |""".stripMargin
+        s"""Invalid parameters. path: ${params.path}. "$from" date is after "$to" date."""
       throw new RuntimeException(errMsg)
     }
   }
+
 }

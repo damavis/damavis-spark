@@ -14,9 +14,7 @@ private[resource] object FileReaderParameters {
     apply(format, path, DatePartitionFormatter.standard)
   }
 
-  def apply(format: Format,
-            path: String,
-            partitionFormatter: DatePartitionFormatter)(
+  def apply(format: Format, path: String, partitionFormatter: DatePartitionFormatter)(
       implicit spark: SparkSession): FileReaderParameters = {
     apply(format, path, partitionFormatter, Map.empty[String, String])
   }
@@ -26,10 +24,7 @@ private[resource] object FileReaderParameters {
             partitionFormatter: DatePartitionFormatter,
             options: Map[String, String])(
       implicit spark: SparkSession): FileReaderParameters = {
-    new FileReaderParameters(format,
-                             path,
-                             partitionFormatter,
-                             options = options)
+    new FileReaderParameters(format, path, partitionFormatter, options = options)
   }
 
 }

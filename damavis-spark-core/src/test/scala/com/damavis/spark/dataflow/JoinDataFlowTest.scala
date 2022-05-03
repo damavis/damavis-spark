@@ -2,10 +2,7 @@ package com.damavis.spark.dataflow
 
 import com.damavis.spark.database.{Database, DbManager}
 import com.damavis.spark.testdata._
-import com.damavis.spark.resource.datasource.{
-  TableReaderBuilder,
-  TableWriterBuilder
-}
+import com.damavis.spark.resource.datasource.{TableReaderBuilder, TableWriterBuilder}
 import com.damavis.spark.utils.{SparkTestBase}
 import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.expressions.Window
@@ -32,37 +29,38 @@ class JoinDataFlowTest extends SparkTestBase {
     TableWriterBuilder(authorsTable).writer().write(authorsData)
 
     val booksTable = db.getTable(booksTableName).get
-    val booksData = dfFromBooks(farewell,
-                                oldMan,
-                                timeMachine,
-                                moreau,
-                                oliverTwist,
-                                expectations)
+    val booksData =
+      dfFromBooks(farewell, oldMan, timeMachine, moreau, oliverTwist, expectations)
     TableWriterBuilder(booksTable).writer().write(booksData)
   }
 
   private val joinAuthorsProcessor = new JoinProcessor {
+
     override def computeImpl(left: DataFrame, right: DataFrame): DataFrame = {
       left
         .join(right, left("name") === right("author"), "inner")
         .select("author", "title", "publicationYear")
     }
+
   }
 
   private val groupByProcessor = new LinealProcessor {
+
     override def computeImpl(data: DataFrame): DataFrame = {
       val window = Window
         .partitionBy("author")
         .orderBy(data("publicationYear") asc)
 
       data
-        .select(col("author"),
-                col("title"),
-                col("publicationYear"),
-                rank().over(window) as "rank")
+        .select(
+          col("author"),
+          col("title"),
+          col("publicationYear"),
+          rank().over(window) as "rank")
         .filter(col("rank") === lit(1))
         .drop("rank")
     }
+
   }
 
   "a pipeline with a join" should {
@@ -75,15 +73,14 @@ class JoinDataFlowTest extends SparkTestBase {
       val authorsReader = TableReaderBuilder(authorsTable).reader()
       val oldBookWriter = TableWriterBuilder(oldestBooksTable).writer()
 
-      val pipeline = DataFlowBuilder.create {
-        implicit definition: DataFlowDefinition =>
-          import implicits._
+      val pipeline = DataFlowBuilder.create { implicit definition: DataFlowDefinition =>
+        import implicits._
 
-          val joinStage = new DataFlowStage(joinAuthorsProcessor)
-          val authorOldestBook = new DataFlowStage(groupByProcessor)
+        val joinStage = new DataFlowStage(joinAuthorsProcessor)
+        val authorOldestBook = new DataFlowStage(groupByProcessor)
 
-          authorsReader -> joinStage.left -> authorOldestBook -> oldBookWriter
-          booksReader -> joinStage.right
+        authorsReader -> joinStage.left -> authorOldestBook -> oldBookWriter
+        booksReader -> joinStage.right
       }
 
       pipeline.run()
@@ -100,8 +97,7 @@ class JoinDataFlowTest extends SparkTestBase {
       val schema = StructType(
         StructField("author", StringType, nullable = true) ::
           StructField("title", StringType, nullable = true) ::
-          StructField("publicationYear", IntegerType, nullable = true) :: Nil
-      )
+          StructField("publicationYear", IntegerType, nullable = true) :: Nil)
 
       val expected = session.createDataFrame(expectedData, schema)
       assertDataFrameEquals(generated, expected)

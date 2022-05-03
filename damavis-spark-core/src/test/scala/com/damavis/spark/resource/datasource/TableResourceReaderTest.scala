@@ -32,10 +32,11 @@ class TableResourceReaderTest extends SparkTestBase {
     }
 
     "read successfully a managed table registered in the catalog" in {
-      session.catalog.createTable("uk_authors",
-                                  "parquet",
-                                  authorsSchema,
-                                  Map[String, String]())
+      session.catalog.createTable(
+        "uk_authors",
+        "parquet",
+        authorsSchema,
+        Map[String, String]())
       val authors = dfFromAuthors(dickens, wells)
 
       authors.write.mode(SaveMode.Overwrite).saveAsTable("uk_authors")
@@ -45,8 +46,7 @@ class TableResourceReaderTest extends SparkTestBase {
 
       val obtained = TableReaderBuilder(tryTable.get).reader().read()
 
-      assertDataFrameEquals(obtained.sort("birthDate"),
-                            authors.sort("birthDate"))
+      assertDataFrameEquals(obtained.sort("birthDate"), authors.sort("birthDate"))
     }
 
     "fail to read a table not yet present in the catalog" in {

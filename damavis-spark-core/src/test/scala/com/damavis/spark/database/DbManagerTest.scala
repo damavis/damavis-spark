@@ -1,6 +1,9 @@
 package com.damavis.spark.database
 
-import com.damavis.spark.database.exceptions.{DatabaseNotFoundException, InvalidDatabaseNameException}
+import com.damavis.spark.database.exceptions.{
+  DatabaseNotFoundException,
+  InvalidDatabaseNameException
+}
 import com.damavis.spark.utils.{SparkTestBase}
 import org.apache.spark.sql.functions._
 

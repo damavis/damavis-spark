@@ -4,14 +4,17 @@ import com.damavis.spark.resource.Format.Format
 import com.damavis.spark.resource.{ResourceWriter, WriterBuilder}
 
 object FileWriterBuilder {
+
   def apply(format: Format, path: String): FileWriterBuilder =
     new FileWriterBuilder(FileWriterParameters(format, path))
 
   def apply(params: FileWriterParameters): FileWriterBuilder =
     new FileWriterBuilder(params)
+
 }
 
 class FileWriterBuilder(params: FileWriterParameters) extends WriterBuilder {
+
   override def writer(): ResourceWriter =
     new FileWriter(params)
 
@@ -27,4 +30,5 @@ class FileWriterBuilder(params: FileWriterParameters) extends WriterBuilder {
 
     new FileWriterBuilder(params.copy(columnNames = columnNames))
   }
+
 }

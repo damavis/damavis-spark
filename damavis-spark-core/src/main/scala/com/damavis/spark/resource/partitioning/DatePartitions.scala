@@ -5,15 +5,16 @@ import com.damavis.spark.fs.{FileSystem, HadoopFS}
 import org.apache.spark.sql.SparkSession
 
 object DatePartitions {
+
   def apply(root: String, pathGenerator: DatePartitionFormatter)(
       implicit spark: SparkSession): DatePartitions = {
     val fs = HadoopFS(root)
     DatePartitions(fs, pathGenerator)
   }
 
-  def apply(fs: FileSystem,
-            pathGenerator: DatePartitionFormatter): DatePartitions =
+  def apply(fs: FileSystem, pathGenerator: DatePartitionFormatter): DatePartitions =
     new DatePartitions(fs, pathGenerator)
+
 }
 
 class DatePartitions(fs: FileSystem, pathGenerator: DatePartitionFormatter) {
@@ -52,8 +53,7 @@ class DatePartitions(fs: FileSystem, pathGenerator: DatePartitionFormatter) {
     }
   }
 
-  private def datesGen(from: LocalDateTime,
-                       to: LocalDateTime): List[LocalDateTime] = {
+  private def datesGen(from: LocalDateTime, to: LocalDateTime): List[LocalDateTime] = {
     val minimumTime = pathGenerator.minimumTemporalUnit()
 
     def datesGen(acc: List[LocalDateTime],
@@ -64,4 +64,5 @@ class DatePartitions(fs: FileSystem, pathGenerator: DatePartitionFormatter) {
     }
     datesGen(List(), from, to)
   }
+
 }

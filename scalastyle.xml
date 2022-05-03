@@ -1,0 +1,202 @@
+<scalastyle commentFilter="enabled">
+  <name>Scalastyle configuration based on Scala style guide</name>
+  <!-- Indentation should follow the "2-space convention"
+       Class/Object/Trait constructors should be declared all on one line,
+       unless the line becomes “too long” (about 100 characters).
+       In that case, put each constructor argument on its own line, indented four spaces -->
+  <check enabled="true" class="org.scalastyle.file.IndentationChecker" level="warning"/>
+  <!-- We should indent with spaces, hence no reason to use tabs -->
+  <check enabled="true" class="org.scalastyle.file.FileTabChecker" level="warning"/>
+  <!-- When calling a method which takes numerous arguments, it is often necessary
+       to wrap the method invocation onto multiple lines. -->
+  <check enabled="true" class="org.scalastyle.file.FileLineLengthChecker" level="warning">
+    <parameters>
+      <!-- 100, because of this:
+           Class/Object/Trait constructors should be declared all on one line,
+           unless the line becomes “too long” (about 100 characters). -->
+      <parameter name="maxLineLength">100</parameter>
+      <parameter name="tabSize">2</parameter>
+    </parameters>
+  </check>
+  <!-- Classes should be named in upper camel case -->
+  <check enabled="true" class="org.scalastyle.scalariform.ClassNamesChecker" level="warning"/>
+  <!-- Object names are like class names (upper camel case) -->
+  <check enabled="true" class="org.scalastyle.scalariform.ObjectNamesChecker" level="warning"/>
+  <!-- Scala packages should follow the Java package naming conventions -->
+  <check enabled="true" class="org.scalastyle.scalariform.PackageNamesChecker" level="warning">
+    <parameters>
+      <parameter name="regex">^[a-z][a-z\._]*$</parameter>
+    </parameters>
+  </check>
+  <!-- Textual (alphabetic) names for methods should be in lower camel case -->
+  <check enabled="true" class="org.scalastyle.scalariform.MethodNamesChecker" level="warning"/>
+  <!-- Constant names should be in upper camel case.
+       Method, Value and variable names should be in lower camel case. -->
+  <check enabled="true" class="org.scalastyle.scalariform.FieldNamesChecker" level="warning"/>
+  <!-- For simple type parameters, a single upper-case letter (from the English alphabet) should be used,
+       starting with A (this is different than the Java convention of starting with T).
+       If the type parameter has a more specific meaning, a descriptive name should be used,
+       following the class naming conventions (as opposed to an all-uppercase style). -->
+  <check enabled="true" class="org.scalastyle.scalariform.ClassTypeParameterChecker" level="warning">
+    <parameters>
+      <parameter name="regex">^[A-Z][A-Za-z]*$</parameter>
+    </parameters>
+  </check>
+  <!-- TODO Annotations, such as @volatile should be in lower camel case.
+       Note: This convention applied even when using type aliases on annotations. -->
+  <!-- All public methods should have explicit type annotations. -->
+  <check enabled="true" class="org.scalastyle.scalariform.PublicMethodsHaveTypeChecker" level="warning"/>
+  <!-- Next rules apply to several space-related checkers! -->
+  <!-- Type annotations and ascriptions should be patterned according to the following template: value: Type -->
+  <!-- TODO partially supported: can't simply disallow spaces before/after parens,
+       because spaces are required in such code:
+
+       List(1 -> 3).map { case (a, b) => a * b }
+
+       Generally speaking, method invocation in Scala follows Java conventions.
+       In other words, there should not be a space between the invocation target and the dot (.),
+       nor a space between the dot and the method name,
+       nor should there be any space between the method name and the argument-delimiters (parentheses).
+       Each argument should be separated by a single space following the comma (,):
+       Named parameters in a method invocation should be treated
+       as regular parameters (spaced accordingly following the comma)
+       with a space on either side of the equals sign. -->
+  <!-- Curly braces should be separated from the code within them by a one-space gap,
+       to give the visually busy braces “breathing room”. -->
+  <check enabled="true" class="org.scalastyle.scalariform.DisallowSpaceBeforeTokenChecker" level="warning">
+    <parameters>
+      <parameter name="tokens">
+        COLON, DOT, COMMA
+      </parameter>
+    </parameters>
+  </check>
+  <check enabled="true" class="org.scalastyle.scalariform.EnsureSingleSpaceAfterTokenChecker" level="warning">
+    <parameters>
+      <parameter name="tokens">
+        COLON, COMMA, EQUALS,
+        <!-- All control structures should be written with a space following the defining keyword -->
+        IF, FOR, WHILE,
+        LBRACE, RBRACE
+      </parameter>
+    </parameters>
+  </check>
+  <check enabled="true" class="org.scalastyle.scalariform.DisallowSpaceAfterTokenChecker" level="warning">
+    <parameters>
+      <parameter name="tokens">DOT</parameter>
+    </parameters>
+  </check>
+  <check enabled="true" class="org.scalastyle.scalariform.EnsureSingleSpaceBeforeTokenChecker" level="warning">
+    <parameters>
+      <parameter name="tokens">EQUALS, LBRACE, RBRACE</parameter>
+    </parameters>
+  </check>
+  <!-- TODO Function types should be declared with a space between the parameter type, the arrow and the return type -->
+  <!-- TODO Parentheses should be omitted wherever possible (e.g. methods of arity-1, such as Int => String). -->
+  <!-- TODO Structural types should be declared on a single line if they are less than 50 characters in length.
+       Otherwise, they should be split across multiple lines and (usually) assigned to their own type alias. -->
+  <!-- Developers should prefer the use of nominal types, unless structural types provide a clear benefit. -->
+  <check enabled="true" class="org.scalastyle.scalariform.StructuralTypeChecker" level="warning"/>
+  <!-- TODO Opening curly braces ({) must be on the same line as the declaration they represent -->
+  <!-- TODO In the rare cases when parenthetical blocks wrap across lines,
+       the opening and closing parentheses should be unspaced
+       and generally kept on the same lines as their content (Lisp-style):
+
+       (this + is a very ++ long *
+         expression)
+
+       Parentheses also serve to disable semicolon inference,
+       and so allow the developer to start lines with operators, which some prefer:
+
+       (  someCondition
+       || someOtherCondition
+       || thirdCondition
+       )
+
+       A trailing parenthesis on the following line is acceptable in this case, for aesthetic reasons. -->
+  <!-- TODO As a rule, files should contain a single logical compilation unit.
+       By “logical” I mean a class, trait or object.
+       One exception to this guideline is for classes or traits which have companion objects.
+       Also, because of the nature of sealed superclasses (and traits),
+       all subtypes must be included in the same file. -->
+  <!-- TODO All multi-unit files should be given camelCase names with a lower-case first letter. -->
+  <!-- TODO Omit braces if you have an else clause.
+       Otherwise, surround the contents with curly braces even if the contents are only a single line. -->
+  <!-- TODO (partially supported) if - Omit braces if you have an else clause.
+       Otherwise, surround the contents with curly braces even if the contents are only a single line. -->
+  <check enabled="true" class="org.scalastyle.scalariform.IfBraceChecker" level="warning"/>
+  <!-- TODO (PR created) while - Never omit braces (while cannot be used in a pure-functional manner). -->
+  <!-- TODO (partially supported) for - Omit braces if you have a yield clause.
+       Otherwise, surround the contents with curly-braces, even if the contents are only a single line. -->
+  <check enabled="true" class="org.scalastyle.scalariform.ForBraceChecker" level="warning"/>
+  <!-- TODO (PR created) case - Always omit braces in case clauses. -->
+  <!-- TODO Comprehensions with only a single generator (e.g. for (i <- 0 to 10) yield i)
+       should use parentheses rather than curly braces.
+       The exceptions to this rule are for-comprehensions which lack a yield clause.
+       In such cases, the construct is actually a loop rather than a functional comprehension
+       and it is usually more readable to string the generators together between parentheses
+       rather than using the syntactically-confusing } { construct. -->
+  <!-- TODO Resist the urge to omit parentheses simply to save two characters -->
+  <!-- TODO Avoid punctuation-free syntax for almost all alphabetic-named methods -->
+  <!-- TODO Methods that take no arguments should not be invoked using postfix notation -->
+  <!-- TODO If a class/object/trait extends anything, the same general rule applies,
+       put it on one line unless it goes over about 100 characters,
+       and then indent four spaces with each item being on its own line and two spaces for extensions -->
+  <!-- TODO All class/object/trait members should be declared interleaved with newlines.
+       The only exceptions to this rule are var and val.
+       These may be declared without the intervening newline,
+       but only if none of the fields have Scaladoc
+       and if all of the fields have simple (max of 20-ish chars, one line) definitions. -->
+  <!-- TODO Fields should precede methods in a scope.
+       The only exception is if the val has a block definition (more than one expression)
+       and performs operations which may be deemed “method-like” (e.g. computing the length of a List).
+       In such cases, the non-trivial val may be declared at a later point
+       in the file as logical member ordering would dictate.
+       This rule only applies to val and lazy val!
+       It becomes very difficult to track changing aliases if var declarations are strewn throughout class file. -->
+  <!-- Avoid the procedure syntax. -->
+  <check enabled="true" class="org.scalastyle.scalariform.ProcedureDeclarationChecker" level="warning"/>
+  <!-- TODO Method modifiers should be given in the following order (when each is applicable):
+       1. Annotations, each on their own line
+       2. Override modifier (override)
+       3. Access modifier (protected, private)
+       4. Final modifier (final)
+       5. def -->
+  <!-- TODO When a method body comprises a single expression which is less than 30 (or so) characters,
+       it should be given on a single line with the method.
+       When the method body is a single expression longer than 30 (or so) characters
+       but still shorter than 70 (or so) characters, it should be given on the following line, indented two spaces. -->
+  <!-- TODO When the body of a method cannot be concisely expressed in a single line
+       or is of a non-functional nature (some mutable state, local or otherwise),
+       the body must be enclosed in braces. -->
+  <!-- TODO Methods which contain a single match expression should be declared in the following way:
+
+       def sum(ls: List[Int]): Int = ls match {
+         case hd :: tail => hd + sum(tail)
+         case Nil => 0
+       } -->
+  <!-- TODO It can be difficult to fit the entire signature with multiple parameter lists on one line.
+       In those cases, align the open-paren of the parameter lists, one list per line.
+       (i.e. if you can’t put them all on one line, put one each per line) -->
+  <!-- TODO Vals should use the lazy keyword directly before the val -->
+  <!-- TODO Scala provides a number of different syntactic options for declaring function values.
+       For example, the following declarations are exactly equivalent:
+
+       val f1 = ((a: Int, b: Int) => a + b)
+       val f2 = (a: Int, b: Int) => a + b
+       val f3 = (_: Int) + (_: Int)
+       val f4: (Int, Int) => Int = (_ + _)
+
+       Of these styles, (1) and (4) are to be preferred at all times.
+
+       Most function values are less trivial than the examples given above.
+       Many contain more than one expression.
+       In such cases, it is often more readable to split the function value across multiple lines.
+       When this happens, only style (1) should be used, substituting braces for parentheses.
+       Style (4) becomes extremely difficult to follow when enclosed in large amounts of code.
+       The declaration itself should loosely follow the declaration style for methods,
+       with the opening brace on the same line as the assignment or invocation,
+       while the closing brace is on its own line immediately following the last line of the function.
+       Parameters should be on the same line as the opening brace, as should the “arrow” (=>). -->
+  <!-- TODO Function values should leverage type inference whenever possible. -->
+  <!-- TODO all of http://docs.scala-lang.org/style/scaladoc.html -->
+</scalastyle>

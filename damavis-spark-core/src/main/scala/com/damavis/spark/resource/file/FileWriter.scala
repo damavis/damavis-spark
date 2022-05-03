@@ -24,15 +24,14 @@ class FileWriter(params: FileWriterParameters) extends ResourceWriter {
       .save(params.path)
   }
 
-  private def validatePartitioning(data: DataFrame,
-                                   columnNames: Seq[String]): Unit = {
+  private def validatePartitioning(data: DataFrame, columnNames: Seq[String]): Unit = {
     val fields = data.schema.fieldNames
 
     val numberPartitionColumns = columnNames.length
     if (fields.length < numberPartitionColumns) {
       val msg =
         s"""Partitioned DataFrame does not have required partition columns
-           |These are: "${columnNames.mkString(",")}"
+           |Columns in existing data: "${columnNames.mkString(",")}"
            |Columns in DataFrame: "${fields.mkString(",")}"
            |""".stripMargin
       throw new FileResourceWriteException(msg)
@@ -46,11 +45,12 @@ class FileWriter(params: FileWriterParameters) extends ResourceWriter {
     if (orderDoesNotMatch) {
       val msg =
         s"""Partitioned DataFrame does not have partition columns in the required order
-           |They should be: "${columnNames.mkString(",")}"
+           |Order in existing data: "${columnNames.mkString(",")}"
            |Order in DataFrame: "${partitionColsInSchema.mkString(",")}"
            |""".stripMargin
 
       throw new FileResourceWriteException(msg)
     }
   }
+
 }

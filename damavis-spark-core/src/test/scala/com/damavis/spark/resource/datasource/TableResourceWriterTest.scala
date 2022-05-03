@@ -59,8 +59,7 @@ class TableResourceWriterTest extends SparkTestBase {
       assert(before == after)
 
       val written = session.read.table(tableName)
-      assertDataFrameEquals(written.sort("birthDate"),
-                            personDf.sort("birthDate"))
+      assertDataFrameEquals(written.sort("birthDate"), personDf.sort("birthDate"))
     }
 
     "there is no partitioning" should {
@@ -96,8 +95,7 @@ class TableResourceWriterTest extends SparkTestBase {
         assert(written.count() == 2)
 
         val expectedDf = dfFromAuthors(hemingway, wells)
-        assertDataFrameEquals(written.sort("birthDate"),
-                              expectedDf.sort("birthDate"))
+        assertDataFrameEquals(written.sort("birthDate"), expectedDf.sort("birthDate"))
       }
 
       "apply properly overwrite save mode" in {
@@ -179,8 +177,7 @@ class TableResourceWriterTest extends SparkTestBase {
         val table = nextTable()
         val writer = TableWriterBuilder(table)
           .partitionedBy("nationality")
-          .overwritePartitionBehavior(
-            OverwritePartitionBehavior.OVERWRITE_MATCHING)
+          .overwritePartitionBehavior(OverwritePartitionBehavior.OVERWRITE_MATCHING)
           .writer()
 
         val authors = dfFromAuthors(hemingway, wells)
@@ -214,8 +211,9 @@ class TableResourceWriterTest extends SparkTestBase {
         val expectedAuthors = dfFromAuthors(hemingway, wells, bradbury)
 
         assert(finalDf.count() == 3)
-        assertDataFrameEquals(finalDf.sort("birthDate"),
-                              expectedAuthors.sort("birthDate"))
+        assertDataFrameEquals(
+          finalDf.sort("birthDate"),
+          expectedAuthors.sort("birthDate"))
       }
     }
 
@@ -233,20 +231,17 @@ class TableResourceWriterTest extends SparkTestBase {
           StructField("name", StringType, nullable = true) ::
             StructField("nationality", StringType, nullable = true) ::
             StructField("deceaseAge", IntegerType, nullable = true) ::
-            Nil
-        )
+            Nil)
 
-        val dickensList = (Row(dickens.name,
-                               dickens.nationality,
-                               dickens.deceaseAge) :: Nil).asJava
+        val dickensList =
+          (Row(dickens.name, dickens.nationality, dickens.deceaseAge) :: Nil).asJava
         val newDf = session.createDataFrame(dickensList, anotherSchema)
 
         val ex = intercept[TableAccessException] {
           writer.write(newDf)
         }
 
-        assert(
-          ex.getMessage.contains("does not have columns in required order"))
+        assert(ex.getMessage.contains("does not have columns in required order"))
       }
     }
   }

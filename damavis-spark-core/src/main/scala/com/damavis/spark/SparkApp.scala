@@ -35,9 +35,11 @@ trait SparkApp extends SparkConf {
     else {
       val master = spark.conf.get("spark.master")
       val localCores = "local\\[(\\d+|\\*)\\]".r.findAllIn(master)
-      if (localCores.hasNext) localCores.group(1) match {
-        case "*" => sys.runtime.availableProcessors()
-        case x   => x.toInt
+      if (localCores.hasNext) {
+        localCores.group(1) match {
+          case "*" => sys.runtime.availableProcessors()
+          case x   => x.toInt
+        }
       } else {
         1
       }

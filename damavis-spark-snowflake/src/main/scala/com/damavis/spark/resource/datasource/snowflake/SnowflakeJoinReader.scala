@@ -5,10 +5,11 @@ import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 
 case class SnowflakeJoinReader(reader: SnowflakeReader, joinData: DataFrame)(
     implicit spark: SparkSession)
-    extends ResourceReader {
+  extends ResourceReader {
 
-  assert(reader.table.isDefined,
-         "SnowflakeJoinReader only accept table reads, not queries.")
+  assert(
+    reader.table.isDefined,
+    "SnowflakeJoinReader only accept table reads, not queries.")
 
   val stagingTable = s"join_tmp__${reader.table.get}"
   val targetTable = s"${reader.table.get}"
@@ -28,14 +29,16 @@ case class SnowflakeJoinReader(reader: SnowflakeReader, joinData: DataFrame)(
   }
 
   override def read(): DataFrame = {
-    SnowflakeWriter(reader.account,
-                    reader.user,
-                    reader.password,
-                    reader.warehouse,
-                    reader.database,
-                    reader.schema,
-                    stagingTable,
-                    SaveMode.Overwrite).write(joinData)
+    SnowflakeWriter(
+      reader.account,
+      reader.user,
+      reader.password,
+      reader.warehouse,
+      reader.database,
+      reader.schema,
+      stagingTable,
+      SaveMode.Overwrite,
+      reader.sfExtraOptions).write(joinData)
     reader.copy(table = None, query = Some(query)).read()
   }
 

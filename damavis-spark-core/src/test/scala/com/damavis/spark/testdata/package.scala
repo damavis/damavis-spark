@@ -6,12 +6,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import com.damavis.spark.database.{Database, Table}
 import com.damavis.spark.entities.{Author, Book, Log}
-import org.apache.spark.sql.types.{
-  IntegerType,
-  StringType,
-  StructField,
-  StructType
-}
+import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 
 import collection.JavaConverters._
@@ -20,14 +15,19 @@ package object testdata {
 
   val hemingway: Author =
     Author("Hemingway", 61, LocalDate.parse("1899-07-21"), "USA")
+
   val wells: Author =
     Author("H.G. Wells", 79, LocalDate.parse("1866-09-21"), "UK")
+
   val dickens: Author =
     Author("Dickens", 58, LocalDate.parse("1812-02-07"), "UK")
+
   val bradbury: Author =
     Author("Ray Bradbury", 91, LocalDate.parse("1920-08-22"), "USA")
+
   val dumas: Author =
     Author("Alexandre Dumas", 68, LocalDate.parse("1802-07-24"), "FR")
+
   val hugo: Author =
     Author("Victor Hugo", 83, LocalDate.parse("1802-02-26"), "FR")
 
@@ -44,16 +44,15 @@ package object testdata {
       StructField("deceaseAge", IntegerType, nullable = true) ::
       StructField("birthDate", StringType, nullable = true) ::
       StructField("nationality", StringType, nullable = true) ::
-      Nil
-  )
+      Nil)
 
-  def dfFromAuthors(authors: Author*)(
-      implicit session: SparkSession): DataFrame = {
+  def dfFromAuthors(authors: Author*)(implicit session: SparkSession): DataFrame = {
     def rowFromAuthor(author: Author): Row = {
-      Row(author.name,
-          author.deceaseAge,
-          author.birthDate.format(ISO_LOCAL_DATE),
-          author.nationality)
+      Row(
+        author.name,
+        author.deceaseAge,
+        author.birthDate.format(ISO_LOCAL_DATE),
+        author.nationality)
     }
 
     val data = authors.map(rowFromAuthor).asJava
@@ -65,8 +64,7 @@ package object testdata {
       StructField("title", StringType, nullable = true) ::
         StructField("publicationYear", IntegerType, nullable = true) ::
         StructField("author", StringType, nullable = false) ::
-        Nil
-    )
+        Nil)
 
     def rowFromBook(book: Book): Row = {
       Row(book.title, book.publicationYear, book.author)
@@ -91,4 +89,5 @@ package object testdata {
 
     tryTable.get
   }
+
 }

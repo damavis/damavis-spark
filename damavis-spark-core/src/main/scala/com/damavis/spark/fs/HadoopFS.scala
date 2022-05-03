@@ -5,8 +5,10 @@ import org.apache.hadoop.fs.Path
 import org.apache.spark.sql.SparkSession
 
 object HadoopFS {
+
   def apply(root: String = "/")(implicit spark: SparkSession): HadoopFS =
     new HadoopFS(new Path(root))
+
 }
 
 class HadoopFS(root: Path)(implicit spark: SparkSession) extends FileSystem {
@@ -27,8 +29,7 @@ class HadoopFS(root: Path)(implicit spark: SparkSession) extends FileSystem {
     val fs = root.getFileSystem(hadoopConf)
 
     if (!fs.isDirectory(pathToCheck))
-      throw new IllegalArgumentException(
-        s"path: $path is not a directory in HDFS")
+      throw new IllegalArgumentException(s"path: $path is not a directory in HDFS")
 
     fs.listStatus(pathToCheck)
       .filter(_.isDirectory)

@@ -5,7 +5,8 @@ import com.damavis.spark.resource.ResourceReader
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 class FileReader(params: FileReaderParameters)(implicit spark: SparkSession)
-    extends ResourceReader {
+  extends ResourceReader {
+
   override def read(): DataFrame = {
 
     val path = params.path
@@ -31,11 +32,12 @@ class FileReader(params: FileReaderParameters)(implicit spark: SparkSession)
         .map(partition => s"$path/$partition")
 
       reader
-        .option("basePath", path)
+        .option("basePath", params.options.getOrElse("basePath", path))
         .load(partitionsToLoad: _*)
 
     } else {
       reader.load(path)
     }
   }
+
 }
