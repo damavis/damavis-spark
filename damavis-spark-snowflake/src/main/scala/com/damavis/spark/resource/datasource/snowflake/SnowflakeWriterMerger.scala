@@ -61,10 +61,9 @@ case class SnowflakeWriterMerger(writer: SnowflakeWriter,
       writer.warehouse,
       writer.database,
       "INFORMATION_SCHEMA",
-      query = Some(
-        s"SELECT COUNT(1) = 1 FROM TABLES WHERE TABLE_NAME = '${targetTable}'"),
-      sfExtraOptions = writer.sfExtraOptions
-    )
+      query =
+        Some(s"SELECT COUNT(1) = 1 FROM TABLES WHERE TABLE_NAME = '${targetTable}'"),
+      sfExtraOptions = writer.sfExtraOptions)
 
     reader
       .read()
