@@ -18,7 +18,7 @@ case class SnowflakeWriterMerger(writer: SnowflakeWriter,
                                  columns: Seq[String],
                                  stagingSchema: Option[String] = None,
                                  deleteStagingTable: Boolean = false)(
-                                  implicit spark: SparkSession)
+    implicit spark: SparkSession)
   extends ResourceWriter {
 
   val stagingTable = s"merge_tmp_delta__${writer.table}"
@@ -63,8 +63,7 @@ case class SnowflakeWriterMerger(writer: SnowflakeWriter,
       writer.warehouse,
       writer.database,
       "INFORMATION_SCHEMA",
-      query =
-        Some(s"SELECT COUNT(1) = 1 FROM TABLES WHERE TABLE_NAME = '$targetTable'"),
+      query = Some(s"SELECT COUNT(1) = 1 FROM TABLES WHERE TABLE_NAME = '$targetTable'"),
       sfExtraOptions = writer.sfExtraOptions)
 
     reader
@@ -79,7 +78,9 @@ case class SnowflakeWriterMerger(writer: SnowflakeWriter,
     val deleteSourceTableQuery =
       s"DROP TABLE IF EXISTS $stagingTable RESTRICT"
 
-    Utils.runQuery(writer.sfOptions + ("schema" -> stagingSchemaToUse), deleteSourceTableQuery)
+    Utils.runQuery(
+      writer.sfOptions + ("schema" -> stagingSchemaToUse),
+      deleteSourceTableQuery)
   }
 
 }
