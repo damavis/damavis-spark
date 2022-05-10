@@ -8,21 +8,23 @@ import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 /**
   * Merge writer data to target table by specified columns
   *
-  * @param writer Snowflake writer
-  * @param columns columns used to merge on
-  * @param stagingSchema staging database schema
+  * @param writer             Snowflake writer
+  * @param columns            columns used to merge on
+  * @param stagingSchema      staging database schema
   * @param deleteStagingTable Delete staging table if true
-  * @param spark SparkSession object
+  * @param spark              SparkSession object
   */
 case class SnowflakeWriterMerger(writer: SnowflakeWriter,
                                  columns: Seq[String],
                                  stagingSchema: Option[String] = None,
                                  deleteStagingTable: Boolean = false)(
-    implicit spark: SparkSession)
+                                  implicit spark: SparkSession)
   extends ResourceWriter {
 
   val stagingTable = s"merge_tmp_delta__${writer.table}"
   val targetTable = s"${writer.table}"
+
+  val stagingSchemaToUse: String = stagingSchema.getOrElse(writer.schema)
 
   override def write(data: DataFrame): Unit = {
     if (targetExists()) {
@@ -35,7 +37,7 @@ case class SnowflakeWriterMerger(writer: SnowflakeWriter,
 
   private def merge(data: DataFrame): Unit = {
     writer
-      .copy(table = stagingTable, mode = SaveMode.Overwrite)
+      .copy(table = stagingTable, mode = SaveMode.Overwrite, schema = stagingSchemaToUse)
       .write(data.select(columns.map(col): _*).distinct())
 
     SnowflakeMerger(
@@ -44,8 +46,8 @@ case class SnowflakeWriterMerger(writer: SnowflakeWriter,
       writer.password,
       writer.warehouse,
       writer.database,
-      stagingSchema.getOrElse(writer.schema),
-      stagingTable,
+      writer.schema,
+      s"$stagingSchemaToUse.$stagingTable",
       targetTable,
       columns,
       writer.sfExtraOptions).merge()
@@ -62,7 +64,7 @@ case class SnowflakeWriterMerger(writer: SnowflakeWriter,
       writer.database,
       "INFORMATION_SCHEMA",
       query =
-        Some(s"SELECT COUNT(1) = 1 FROM TABLES WHERE TABLE_NAME = '${targetTable}'"),
+        Some(s"SELECT COUNT(1) = 1 FROM TABLES WHERE TABLE_NAME = '$targetTable'"),
       sfExtraOptions = writer.sfExtraOptions)
 
     reader
@@ -77,7 +79,7 @@ case class SnowflakeWriterMerger(writer: SnowflakeWriter,
     val deleteSourceTableQuery =
       s"DROP TABLE IF EXISTS $stagingTable RESTRICT"
 
-    Utils.runQuery(writer.sfOptions, deleteSourceTableQuery)
+    Utils.runQuery(writer.sfOptions + ("schema" -> stagingSchemaToUse), deleteSourceTableQuery)
   }
 
 }
