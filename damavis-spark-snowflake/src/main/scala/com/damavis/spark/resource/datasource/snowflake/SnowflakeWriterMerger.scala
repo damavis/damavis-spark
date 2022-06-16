@@ -56,6 +56,7 @@ case class SnowflakeWriterMerger(writer: SnowflakeWriter,
   }
 
   private def targetExists(): Boolean = {
+    val writerSchema = writer.schema
     val reader = SnowflakeReader(
       writer.account,
       writer.user,
@@ -63,7 +64,8 @@ case class SnowflakeWriterMerger(writer: SnowflakeWriter,
       writer.warehouse,
       writer.database,
       "INFORMATION_SCHEMA",
-      query = Some(s"SELECT COUNT(1) = 1 FROM TABLES WHERE TABLE_NAME = '$targetTable'"),
+      query =
+        Some(s"SELECT COUNT(1) = 1 FROM TABLES WHERE lower(TABLE_SCHEMA)=lower('$writerSchema') and TABLE_NAME = '$targetTable'"),
       sfExtraOptions = writer.sfExtraOptions)
 
     reader
