@@ -5,4 +5,5 @@ import com.damavis.spark.resource.Format.Format
 case class FileWriterParameters(format: Format,
                                 path: String,
                                 mode: String = "overwrite",
-                                columnNames: Seq[String] = Nil)
+                                columnNames: Seq[String] = Nil,
+                                options: Map[String, String] = Map())

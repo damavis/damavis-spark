@@ -21,6 +21,9 @@ class FileWriterBuilder(params: FileWriterParameters) extends WriterBuilder {
   def mode(mode: String): FileWriterBuilder =
     new FileWriterBuilder(params.copy(mode = mode))
 
+  def options(opts: Map[String, String]): FileWriterBuilder =
+    new FileWriterBuilder(params.copy(options = opts))
+
   def partitionedBy(columnNames: Seq[String]): FileWriterBuilder = {
     if (columnNames.isEmpty)
       throw new RuntimeException(s"columnNames parameter cannot be empty")
