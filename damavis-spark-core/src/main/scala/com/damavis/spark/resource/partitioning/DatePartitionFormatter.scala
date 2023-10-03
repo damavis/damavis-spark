@@ -43,7 +43,7 @@ object DatePartitionFormatter {
     apply(cols)
   }
 
-  def apply(definitions: Seq[DatePartColumn]): DatePartitionFormatter = {
+  def apply(definitions: Seq[DatePartColumn], hasLabels: Boolean = true): DatePartitionFormatter = {
     if (definitions.isEmpty)
       throw new IllegalArgumentException(
         "Column definitions for a DatePartitionFormatter cannot be empty")
@@ -60,18 +60,23 @@ object DatePartitionFormatter {
           throw new IllegalArgumentException(msg, ex)
       }
     }
-    new DatePartitionFormatter(cols)
+    new DatePartitionFormatter(cols, hasLabels)
   }
 
 }
 
 class DatePartitionFormatter protected (
-    columns: Seq[DatePartitionFormatter.ColumnFormatter]) {
+    columns: Seq[DatePartitionFormatter.ColumnFormatter], hasLabels: Boolean = true) {
 
   def dateToPath(date: LocalDateTime): String = {
     columns
       .map { part =>
-        s"${part.column}=${part.formatter.format(date)}"
+        if (hasLabels) {
+          s"${part.column}=${part.formatter.format(date)}"
+        } else {
+          part.formatter.format(date)
+        }
+
       }
       .mkString("/")
   }

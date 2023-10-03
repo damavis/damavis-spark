@@ -132,5 +132,26 @@ class DatePartitionsTest extends WordSpec with MockFactory {
           .generatePaths(from, to)
       }
     }
+
+    "partitioning only contains date, but not labels for column" should {
+      "return a proper list" in {
+        val from = LocalDateTime.of(2020, 5, 12, 0, 0)
+        val to = LocalDateTime.of(2020, 5, 15, 0, 0)
+
+        val fsStub = stub[FileSystem]
+        (fsStub.pathExists _).when("2020-05-12").returns(true)
+        (fsStub.pathExists _).when("2020-05-13").returns(true)
+        (fsStub.pathExists _).when("2020-05-14").returns(true)
+        (fsStub.pathExists _).when("2020-05-15").returns(true)
+
+        val expected = "2020-05-12" :: "2020-05-13" :: "2020-05-14" :: "2020-05-15" :: Nil
+
+        val generated = DatePartitions(
+          fsStub, DatePartitionFormatter(DatePartColumn("dt", "yyyy-MM-dd") :: Nil, hasLabels = false))
+          .generatePaths(from, to)
+
+        assert(expected === generated)
+      }
+    }
   }
 }
