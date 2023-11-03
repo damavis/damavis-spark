@@ -38,7 +38,7 @@ class FileReaderBuilder(params: FileReaderParameters)(implicit spark: SparkSessi
   }
 
   def options(options: Map[String, String]): FileReaderBuilder = {
-    val newParams = params.copy(options = options)
+    val newParams = params.copy(options = params.options ++ options)
     new FileReaderBuilder(newParams)
   }
 
