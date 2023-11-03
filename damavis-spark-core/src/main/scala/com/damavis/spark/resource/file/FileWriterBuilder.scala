@@ -21,8 +21,10 @@ class FileWriterBuilder(params: FileWriterParameters) extends WriterBuilder {
   def mode(mode: String): FileWriterBuilder =
     new FileWriterBuilder(params.copy(mode = mode))
 
-  def options(opts: Map[String, String]): FileWriterBuilder =
-    new FileWriterBuilder(params.copy(options = opts))
+  def options(opts: Map[String, String]): FileWriterBuilder = {
+    val newParams = params.copy(options = params.options ++ opts)
+    new FileWriterBuilder(newParams)
+  }
 
   def partitionedBy(columnNames: Seq[String]): FileWriterBuilder = {
     if (columnNames.isEmpty)
