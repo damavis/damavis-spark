@@ -1,6 +1,5 @@
 lazy val scala212 = "2.12.11"
-lazy val scala211 = "2.11.12"
-lazy val supportedScalaVersions = List(scala212, scala211)
+lazy val supportedScalaVersions = List(scala212)
 
 val sparkVersion = "3.0.0"
 val sparkTestVersion = "2.4.5"
@@ -10,7 +9,7 @@ val dependencies = Seq(
   "org.apache.spark" %% "spark-sql" % sparkVersion % Provided,
   "org.apache.spark" %% "spark-hive" % sparkVersion % Provided,
   "org.apache.spark" %% "spark-avro" % sparkVersion % Provided,
-  "io.delta" %% "delta-core" % "0.7.0" % Provided,
+  "io.delta" %% "delta-core" % "0.6.0" % Provided,
   "com.typesafe" % "config" % "1.3.2")
 
 val testDependencies = Seq(
