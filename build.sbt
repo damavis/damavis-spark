@@ -9,7 +9,7 @@ val dependencies = Seq(
   "org.apache.spark" %% "spark-sql" % sparkVersion % Provided,
   "org.apache.spark" %% "spark-hive" % sparkVersion % Provided,
   "org.apache.spark" %% "spark-avro" % sparkVersion % Provided,
-  "io.delta" %% "delta-core" % "0.6.0" % Provided,
+  "io.delta" %% "delta-core" % "0.7.0" % Provided,
   "com.typesafe" % "config" % "1.3.2")
 
 val testDependencies = Seq(
